@@ -1,4 +1,3 @@
 xbmc
 ====
-test
-test
+XBMC / Kodi addon repository
