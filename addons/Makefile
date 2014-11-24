@@ -3,6 +3,8 @@
 
 addons.xml.md5: addons.xml plugin.video.tvatom_tv_subscriber/addon.xml.md5 plugin.video.tvatom_tv_archive/addon.xml.md5 plugin.video.tvatom_movie_subscriber/addon.xml.md5 plugin.video.tvatom_movie_archive/addon.xml.md5
 	./addons_xml_generator.py
+	git commit -a --allow-empty-message -m ""
+	git push
 
 
 plugin.video.tvatom_tv_subscriber/addon.xml.md5: plugin.video.tvatom_tv_subscriber/addon.xml plugin.video.tvatom_tv_subscriber/default.py plugin.video.tvatom_tv_subscriber/resources/settings.xml
