@@ -8,8 +8,8 @@
     </extension>
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
-        <summary lang="en">Subscribe to Movies from TV Atom</summary>
+        <summary lang="en">Subscribe to Movies from TVAtom</summary>
         <language></language>
-        <description lang="en">Subscribe to Movies from TV Atom</description>
+        <description lang="en">Subscribe to Movies from TVAtom</description>
     </extension>
 </addon>
