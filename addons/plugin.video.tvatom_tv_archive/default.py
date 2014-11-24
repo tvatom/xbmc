@@ -27,7 +27,7 @@ DEBUG = 9
 def do_debug( level, *args ):
     try:
         if level <= DEBUG:
-            print >>sys.stderr, "##### TVATOM DEBUG: %s (%d): %s" % ( os.path.basename( sys.argv[0]), level, args )
+            print >>sys.stderr, "##### TVATOM DEBUG: (%d): %s" % ( level, args )
     except:
         pass
 
@@ -181,9 +181,6 @@ def main():
     setting_password = xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "password" )
     setting_server = xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "server" )
     
-    do_debug( 1, "settings:", settings )
-    
-    
     if not arg_show:
         url_index = "http://feed1.tvatom.com/index/tv-show.json"
         show_list = fetch_object_from_json_url_with_auth( url_index,
@@ -254,7 +251,7 @@ def main():
 
         for show in show_list:
 #        for show in show_list[ 10 : 12 ]:  ## DEBUG
-            appurl_show = build_appurl( base_url, { "show": show.get( "name" ) } )
+            appurl_show = build_appurl( { "show": show.get( "name" ) } )
             
             list_item = xbmcgui.ListItem( show.get( "tvshowtitle", show.get( "name" ) ),
                                           )
@@ -288,14 +285,15 @@ def main():
         return # done building show index
     
     
-    if arg_show and not arg_show or not arg_episode:
+    if arg_show and not arg_episode:
         url_show = "http://feed1.tvatom.com/show/%s.json" % arg_show
         episode_list = fetch_object_from_json_url_with_auth( url_show )
         
         for episode in episode_list:
-            episode_season = episode.get( "Season" )
-            episode_num = episode.get( "Episode" )
+            episode_season = episode.get( "season" )
+            episode_num = episode.get( "episode" )
             episode_file = episode.get( "file" )
+            episode_title = episode.get( "tvshowtitle" )
             
             if not episode_season:
                 print "WARNING: MISSING: episode_season"
@@ -311,10 +309,8 @@ def main():
             
             list_item = xbmcgui.ListItem( "s%se%s - %s" % ( episode_season,
                                                             episode_num,
-                                                            episode.get( "TVShowTitle" ) ),
+                                                            episode_title ),
                                           iconImage = "DefaultVideo.png" )
-            
-#            episode[
             
             list_item.setInfo( "video", episode )
             
@@ -324,7 +320,7 @@ def main():
             
             
             
-            url_episode = os.path.join( "http://%s:%s@data11.%s/show/" % ( setting_username, setting_password, setting_server ),
+            url_episode = os.path.join( "http://%s:%s@data1.%s/show/" % ( setting_username, setting_password, setting_server ),
                                         arg_show, episode_season, episode_num, episode_file ) #+ "|auth=any"
             
             xbmcplugin.addDirectoryItem( handle = addon_handle,
