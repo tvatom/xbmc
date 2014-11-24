@@ -14,4 +14,19 @@
         <description lang="en">Subscribe to TV shows from TV Atom</description>
     </extension>
 </addon>
+
+<addon id="plugin.video.tvatom_tv_archive" name="TVAtom.com TV Archive" version="0.0.2" provider-name="TV Atom">
+    <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary lang="en">Watch TV shows from TV Atom</summary>
+        <language></language>
+        <description lang="en">Watch TV shows from TV Atom</description>
+    </extension>
+</addon>
 </addons>
