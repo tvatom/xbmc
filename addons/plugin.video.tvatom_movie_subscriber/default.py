@@ -377,7 +377,7 @@ def show_update( show ):
 #            print "WARNING: MISSING: episode_file"
 #            continue
         
-        url_episode = os.path.join( "http://%s:%s@data11.tvatom.com/show/" % ( \
+        url_episode = os.path.join( "http://%s:%s@data1.tvatom.com/show/" % ( \
                 xbmcaddon.Addon( "plugin.video.tvatom_tv_subscriber" ).getSetting( "username" ),
                 xbmcaddon.Addon( "plugin.video.tvatom_tv_subscriber" ).getSetting( "password" ) ),
                                     show, episode_season, episode_num, episode_file ) #+ "|auth=any"
@@ -487,7 +487,7 @@ def play_episode( show, season, episode ):
         if not episode_num == episode:
             continue
         
-        url_episode = os.path.join( "http://%s:%s@data11.tvatom.com/show/" % \
+        url_episode = os.path.join( "http://%s:%s@data1.tvatom.com/show/" % \
                                         ( xbmcaddon.Addon( "plugin.video.tvatom_tv_subscriber" ).getSetting( "username" ),
                                           xbmcaddon.Addon( "plugin.video.tvatom_tv_subscriber" ).getSetting( "password" ) ),
                                     show, episode_season, episode_num, episode_file ) #+ "|auth=any"

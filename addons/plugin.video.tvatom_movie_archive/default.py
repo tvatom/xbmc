@@ -323,7 +323,7 @@ def main():
             
             
             
-            url_episode = os.path.join( "http://%s:%s@data11.%s/show/" % ( setting_username, setting_password, setting_server ),
+            url_episode = os.path.join( "http://%s:%s@data1.%s/show/" % ( setting_username, setting_password, setting_server ),
                                         arg_show, episode_season, episode_num, episode_file ) #+ "|auth=any"
             
             xbmcplugin.addDirectoryItem( handle = addon_handle,
