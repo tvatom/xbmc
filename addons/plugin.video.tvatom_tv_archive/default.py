@@ -9,12 +9,14 @@ import urllib2
 import json
 import urlparse
 from operator import itemgetter
+import shutil
 
+import xbmc
 import xbmcgui
-try:
-    import xbmcplugin
-except:
-    pass
+#import resources.lib.utils as utils
+import xbmcaddon
+import xbmcplugin
+
 
 PATH_CACHE = "/storage/tvatom-cache"
 
