@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="Settings">
+        <setting id="server" label="Server:" type="text" default="tvatom.com" />
+        <setting id="username" label="Username:" type="text" default="" />
+        <setting id="password" label="Password:" type="text" default="" option="hidden" />
+        <setting id="dynamic_urls" label="Dynamic video URLs:" type="bool" default="false"/>
+        <setting id="update_during_playback" label="Update during playback:" type="bool" default="false"/>
+        <setting id="rating" label="Rating:" type="text" default=""/>
+        <setting id="debug" label="Debugging:" type="bool" default="false"/>
+    </category>
+    <category label="Controls">
+        <setting label="Update TV Show Cache  (detects new shows)" type="action" action="RunScript($CWD/default.py, 0, ?)" />
+        <setting label="Clean Video Library  (detects epsiode deletions)" type="action" action="RunScript($CWD/default.py, 0, ?action=clean)" />
+        <setting label="Update Video Library  (detects new episodes)" type="action" action="RunScript($CWD/default.py, 0, ?action=update)" />
+    </category>
+</settings>
