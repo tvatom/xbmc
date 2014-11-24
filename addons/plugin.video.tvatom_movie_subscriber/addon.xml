@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon id="plugin.video.tvatom_tv_subscriber" name="TVAtom TV Subscriber" version="0.0.1" provider-name="TVAtom">
+    <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary lang="en">Subscribe to Movies from TV Atom</summary>
+        <language></language>
+        <description lang="en">Subscribe to Movies from TV Atom</description>
+    </extension>
+</addon>
