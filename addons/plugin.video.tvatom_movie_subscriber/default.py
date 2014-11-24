@@ -51,7 +51,7 @@ DEBUG = 9
 def do_debug( level, *args ):
     try:
         if level <= DEBUG:
-            print >>sys.stderr, "##### TVATOM DEBUG: (%d): %s" % ( level, args )
+            print >>sys.stderr, "##### TVATOM DEBUG: %s (%d): %s" % ( os.path.basename( sys.argv[ 0 ] ), level, args )
     except:
         pass
 
@@ -686,6 +686,6 @@ def main():
 
 
 if __name__ == "__main__":
-    return # XXX FIXME: WRITE THIS
+    do_debug( 1, "XXX FIXME TODO: WRITE THIS" )
 #    main()
 

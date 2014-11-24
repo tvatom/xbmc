@@ -338,6 +338,6 @@ def main():
 
 
 if __name__ == "__main__":
-    do_debug( 1, "" )
+    do_debug( 1, "XXX FIXME TODO: WRITE THIS" )
 #    main()
 
