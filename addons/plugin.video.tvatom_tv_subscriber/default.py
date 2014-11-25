@@ -260,14 +260,15 @@ def cache_nfo_for_all_shows():
         
         show_num += 1
     
-    if shows_to_possibly_delete and len( shows_to_possibly_delete ) < 20: ## guard against deleting ALL shows if ever empty list from json
-        do_debug( 1, "DELETING SHOWS:", shows_to_possibly_delete )
-        for show in shows_to_possibly_delete:
-            path_show_to_delete = os.path.join( PATH_STRM, show )
-            do_debug( 1, "DELETING SHOW AT PATH:", path_show_to_delete )
-            shutil.rmtree( path_show_to_delete )
-    else:
-        do_debug( 2, "WARNING: cache_nfo_for_all_shows(): TOO MANY SHOWS TO DELETE, NOT DELETING:", len( shows_to_possibly_delete ), shows_to_possibly_delete )
+    if shows_to_possibly_delete:
+        if len( shows_to_possibly_delete ) > 20: ## guard against deleting ALL shows if ever empty list from json
+            do_debug( 1, "DELETING SHOWS:", shows_to_possibly_delete )
+            for show in shows_to_possibly_delete:
+                path_show_to_delete = os.path.join( PATH_STRM, show )
+                do_debug( 1, "DELETING SHOW AT PATH:", path_show_to_delete )
+                shutil.rmtree( path_show_to_delete )
+        else:
+            do_debug( 2, "WARNING: cache_nfo_for_all_shows(): TOO MANY SHOWS TO DELETE, NOT DELETING:", len( shows_to_possibly_delete ), shows_to_possibly_delete )
     progress.close()
     
     
