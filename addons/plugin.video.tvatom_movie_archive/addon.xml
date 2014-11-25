@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.tvatom_movie_archive" name="TVAtom Movie Archive" version="0.0.7" provider-name="TVAtom">
+<addon id="plugin.video.tvatom_movie_archive" name="TVAtom Movie Archive" version="0.0.8" provider-name="TVAtom">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
