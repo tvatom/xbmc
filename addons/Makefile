@@ -1,10 +1,5 @@
 
-
-
-addons.xml.md5: addons.xml plugin.video.tvatom_tv_subscriber/addon.xml.md5 plugin.video.tvatom_tv_archive/addon.xml.md5 plugin.video.tvatom_movie_subscriber/addon.xml.md5 plugin.video.tvatom_movie_archive/addon.xml.md5
-	./addons_xml_generator.py
-	git commit -a --allow-empty-message -m ""
-	git push
+all: plugin.video.tvatom_tv_subscriber/addon.xml.md5 plugin.video.tvatom_tv_archive/addon.xml.md5 plugin.video.tvatom_movie_subscriber/addon.xml.md5 plugin.video.tvatom_movie_archive/addon.xml.md5
 
 
 plugin.video.tvatom_tv_subscriber/addon.xml.md5: plugin.video.tvatom_tv_subscriber/addon.xml plugin.video.tvatom_tv_subscriber/default.py plugin.video.tvatom_tv_subscriber/resources/settings.xml
@@ -46,3 +41,11 @@ plugin.video.tvatom_movie_archive/addon.xml.md5: plugin.video.tvatom_movie_archi
 	zip -r ../zip/plugin.video.tvatom_movie_archive/plugin.video.tvatom_movie_archive-`awk -F'"' '/addon id/{print $$6}' plugin.video.tvatom_movie_archive/addon.xml`.zip plugin.video.tvatom_movie_archive
 	git add ../zip/plugin.video.tvatom_movie_archive/plugin.video.tvatom_movie_archive-`awk -F'"' '/addon id/{print $$6}' plugin.video.tvatom_movie_archive/addon.xml`.zip
 	git commit -a --allow-empty-message -m "plugin.video.tvatom_movie_archive-`awk -F'"' '/addon id/{print $$6}' plugin.video.tvatom_movie_archive/addon.xml`"
+
+
+addons.xml.md5: addons.xml plugin.video.tvatom_tv_subscriber/addon.xml.md5 plugin.video.tvatom_tv_archive/addon.xml.md5 plugin.video.tvatom_movie_subscriber/addon.xml.md5 plugin.video.tvatom_movie_archive/addon.xml.md5
+	./addons_xml_generator.py
+	git commit -a --allow-empty-message -m ""
+	git push
+
+
