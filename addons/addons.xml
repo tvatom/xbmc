@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.tvatom_tv_subscriber" name="TVAtom TV Subscriber" version="0.0.7" provider-name="TVAtom">
+<addon id="plugin.video.tvatom_tv_subscriber" name="TVAtom TV Subscriber" version="0.0.8" provider-name="TVAtom">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
@@ -15,7 +15,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.tvatom_movie_archive" name="TVAtom Movie Archive" version="0.0.5" provider-name="TVAtom">
+<addon id="plugin.video.tvatom_movie_archive" name="TVAtom Movie Archive" version="0.0.7" provider-name="TVAtom">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
@@ -24,13 +24,13 @@
     </extension>
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
-        <summary lang="en">Watch Movies from TVAtom</summary>
+        <summary lang="en">Watch Movies from TVAtom Archive</summary>
         <language></language>
-        <description lang="en">Watch Movies from TVAtom</description>
+        <description lang="en">Watch Movies from TVAtom Archive</description>
     </extension>
 </addon>
 
-<addon id="plugin.video.tvatom_movie_subscriber" name="TVAtom Movie Subscriber" version="0.0.5" provider-name="TVAtom">
+<addon id="plugin.video.tvatom_movie_subscriber" name="TVAtom Movie Subscriber" version="0.0.7" provider-name="TVAtom">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
@@ -45,7 +45,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.tvatom_tv_archive" name="TVAtom TV Archive" version="0.0.6" provider-name="TVAtom">
+<addon id="plugin.video.tvatom_tv_archive" name="TVAtom TV Archive" version="0.0.7" provider-name="TVAtom">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
@@ -54,9 +54,9 @@
     </extension>
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
-        <summary lang="en">Watch TV shows from TVAtom</summary>
+        <summary lang="en">Watch TV shows from TVAtom Archive</summary>
         <language></language>
-        <description lang="en">Watch TV shows from TVAtom</description>
+        <description lang="en">Watch TV shows from TVAtom Archive</description>
     </extension>
 </addon>
 </addons>
