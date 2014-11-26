@@ -677,14 +677,31 @@ def main():
         play_episode( arg_show, arg_season, arg_episode )
         return
     
+    elif arg_action == "clean":
+        do_debug( 1, "CleanLibrary(video)" )
+        xbmc.executebuiltin( "CleanLibrary(video)" )
+        return
+    
     elif arg_action == "update":
         do_debug( 1, "UpdateLibrary(video)" )
         xbmc.executebuiltin( "UpdateLibrary(video)" )
         return
     
-    elif arg_action == "clean":
-        xbmc.executebuiltin( "CleanLibrary(video)" )
-        return
+    
+    ## CRONTAB:   30 4  * * *   xbmc-send --action="RunPlugin(plugin://plugin.video.tvatom_tv_subscriber?action=cron_update)"
+    elif arg_action == "cron_update":
+        setting_update_during_playback = xbmcaddon.Addon( "plugin.video.tvatom_tv_subscriber" ).getSetting( "update_during_playback" )
+        if not xbmc.Player().isPlaying() or update_during_playback == "true": # or utils.getSetting( "run_during_playback" ) == "true":
+            do_debug( 1, "cron_update: cache_nfo_for_all_shows()" )
+            cache_nfo_for_all_shows()
+            
+            do_debug( 1, "cron_update: CleanLibrary(video)" )
+            xbmc.executebuiltin( "CleanLibrary(video)" )
+            
+            do_debug( 1, "cron_update: UpdateLibrary(video)" )
+            xbmc.executebuiltin( "UpdateLibrary(video)" )
+            
+            return
     
     
 
