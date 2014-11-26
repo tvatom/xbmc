@@ -554,7 +554,7 @@ def play_episode( show, season, episode ):
 
 
 ## CRONTAB:
-##    */5 xbmc-send --action="RunPlugin(plugin://plugin.video.tvatom_tv_subscriber?action=cron_shows)"
+##    */5 *  * * *   xbmc-send --action="RunPlugin(plugin://plugin.video.tvatom_tv_subscriber?action=cron_shows)"
 
 def cron_shows():
     ## update new episodes for shows from cron..
@@ -566,6 +566,9 @@ def cron_shows():
         return
     
     updated = 0
+    if not os.path.isdir( PATH_SUBSCRIBED ):
+        os.makedirs( PATH_SUBSCRIBED )
+
     for show in os.listdir( PATH_SUBSCRIBED ):
         do_debug( 1, "cron_shows(): SHOW:", show )
         if show_update( show ):
