@@ -212,7 +212,7 @@ def DEBUG_cache_tvdbid_to_subdir( subdir, tvdb_id ):  # e.g.: ("30.rock/01", "79
 def cache_nfo_for_all_shows():
     do_debug( 1, "cache_nfo_for_all_shows()" )
     
-    cancelled = False
+    canceled = False
     
     url_index = "http://feed1.tvatom.com/index/tv-show.json"
     show_list = fetch_object_from_json_url_with_auth( url_index,
@@ -235,7 +235,7 @@ def cache_nfo_for_all_shows():
         progress_message = "%d out of %d" % ( show_num, show_total ) 
         progress.update( int( ( show_num / float( show_total ) ) * 100 ), "", progress_message, "" )
         if progress.iscanceled():
-            cancelled = True
+            canceled = True
             break
         show_num += 1
     progress.close()
@@ -251,7 +251,7 @@ def cache_nfo_for_all_shows():
         progress_message = "%d out of %d" % ( show_num, show_total ) 
         progress.update( int( ( show_num / float( show_total ) ) * 100 ), "", progress_message, "" )
         if progress.iscanceled():
-            cancelled = True
+            canceled = True
             break
         
         if show not in show_list_names: ## tkooda : 2014-11-24 : XXXX FIXME: THIS LIST LOOKUP IS SLOW!, TRY USING A set() for show_list_names instead
@@ -289,7 +289,7 @@ def cache_nfo_for_all_shows():
         else:
             do_debug( 1, "cache_nfo_for_all_shows(): WARNING: xbmc.Player().isPlaying() WAS PLAYING" )
     else:
-        do_debug( 1, "cache_nfo_for_all_shows(): WARNING: progress.iscanceled() WAS CANCELLED" )
+        do_debug( 1, "cache_nfo_for_all_shows(): WARNING: progress.iscanceled() WAS CANCELED" )
 
 
 ## return "1" if we do cache a new strm file..
