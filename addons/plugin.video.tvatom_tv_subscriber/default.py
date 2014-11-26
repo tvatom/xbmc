@@ -214,6 +214,8 @@ def cache_nfo_for_all_shows():
     
     canceled = False
     
+    is_first_run = not os.path.isdir( PATH_STRM )
+    
     url_index = "http://feed1.tvatom.com/index/tv-show.json"
     show_list = fetch_object_from_json_url_with_auth( url_index,
                                                       sortkey = "name" )
@@ -240,6 +242,9 @@ def cache_nfo_for_all_shows():
         show_num += 1
     progress.close()
     
+    if is_first_run:
+        return # skip cleaning out undesired show folders as we just created them all for the first time
+    
     
     ## FIXME:  delete strm cache dirs for shows that aren't in the show_list json?  (e.g. if I delete or rename a show; WARNING: won't work with two sources, as this only takes one json source for now)
     progress = xbmcgui.DialogProgress()
@@ -247,6 +252,7 @@ def cache_nfo_for_all_shows():
     show_list_names = [ item[ "name" ] for item in show_list ]
     shows_to_possibly_delete = []
     show_num = 0
+
     for show in os.listdir( PATH_STRM ):
         progress_message = "%d out of %d" % ( show_num, show_total ) 
         progress.update( int( ( show_num / float( show_total ) ) * 100 ), "", progress_message, "" )
