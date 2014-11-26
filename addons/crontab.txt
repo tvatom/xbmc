@@ -1,0 +1,3 @@
+#*/5 *  * * *   xbmc-send --action="RunPlugin(plugin://plugin.video.tvatom_tv_subscriber?action=cron_shows)"
+30  4  * * *   xbmc-send --action="RunPlugin(plugin://plugin.video.tvatom_tv_subscriber?action=cron_update)"
+45  4  * * *   xbmc-send --action="RunPlugin(plugin://plugin.video.tvatom_movie_subscriber?action=cron_update)"
