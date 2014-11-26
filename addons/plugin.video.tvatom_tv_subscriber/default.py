@@ -292,7 +292,8 @@ def cache_nfo_for_all_shows():
         do_debug( 1, "cache_nfo_for_all_shows(): WARNING: progress.iscanceled() WAS CANCELLED" )
 
 
-def cache_episode_strm( show, season, episode, url_strm, filename = None ): # specify filename ("myshow.s01e03.hdtv.avi") if using local app URL
+## return "1" if we do cache a new strm file..
+def cache_episode_strm( show, season, episode, url_strm, filename = None, force_update = False ): # specify filename ("myshow.s01e03.hdtv.avi") if using local app URL
     path_episode = os.path.join( PATH_STRM, show, season, episode )
     if not os.path.isdir( path_episode ):
         os.makedirs( path_episode )
@@ -301,36 +302,47 @@ def cache_episode_strm( show, season, episode, url_strm, filename = None ): # sp
         filename = os.path.basename( url_strm )
     path_episode_strm = os.path.join( path_episode,
                                       filename + ".strm" )
-    if os.path.exists( path_episode_strm ):
-        return
     
-    do_debug( 1, "cache_episode_strm:", show, season, episode, url_strm, path_episode_strm )
+    if force_update or not os.path.exists( path_episode_strm ):
+        do_debug( 1, "cache_episode_strm:", show, season, episode, url_strm, path_episode_strm )
+        
+        write_file( path_episode_strm, url_strm )
+        
+        return 1
     
-    write_file( path_episode_strm, url_strm )
+    return 0
 
 
 
-def cache_episode_strm_and_nfo( show, season, episode, url_strm, filename, show_title ): # specify filename ("myshow.s01e03.hdtv.avi") if using local app URL
+## return "1" if we do cache a new strm and nfo file..
+def cache_episode_strm_and_nfo( show, season, episode, url_strm, filename, show_title, force_update = False ): # specify filename ("myshow.s01e03.hdtv.avi") if using local app URL
     path_episode = os.path.join( PATH_STRM, show, season, episode )
     if not os.path.isdir( path_episode ):
         os.makedirs( path_episode )
+    
+    count_updated = 0
     
     ## make *.strm file for episode
     path_episode_strm = os.path.join( path_episode,
                                       filename + ".strm" )
     
-    do_debug( 1, "cache_episode_strm_and_nfo(): strm:", show, season, episode, url_strm, path_episode_strm )
-    
-    write_file( path_episode_strm, url_strm )
+    if force_update or not os.path.exists( path_episode_strm ):
+        do_debug( 1, "cache_episode_strm_and_nfo(): strm:", show, season, episode, url_strm, path_episode_strm )
+        
+        write_file( path_episode_strm, url_strm )
+        count_updated += 1
     
     
     ## make *.nfo file for episode
     path_episode_nfo = os.path.join( path_episode,
                                      filename + ".nfo" )
     
-    do_debug( 1, "cache_episode_strm_and_nfo(): nfo:", show, season, episode, path_episode_nfo )
+    if force_update or not os.path.exists( path_episode_nfo ):
+        do_debug( 1, "cache_episode_strm_and_nfo(): nfo:", show, season, episode, path_episode_nfo )
+        
+        write_file( path_episode_nfo, NFO_EPISODE % ( show_title, season, episode ) )
     
-    write_file( path_episode_nfo, NFO_EPISODE % ( show_title, season, episode ) )
+    return count_updated
 
 
 
@@ -350,7 +362,9 @@ def cache_episode_strm_and_nfo( show, season, episode, url_strm, filename, show_
 #        os.unlink( path_show_subscriber )
 
 
-def show_update( show ):
+## update local strm cache with any missing shows..
+## tkooda : 2014-11-25 : XXX FIXME TODO: optionally have it wipe out any extra shows that it shouldn't have..
+def show_update( show, remove_extra = True, force_update_strm_contents = False, update_library = False ):
     path_show = os.path.join( PATH_STRM, show )
     if not os.path.isdir( path_show ):
         os.makedirs( path_show )
@@ -358,7 +372,7 @@ def show_update( show ):
     url_show = "http://feed1.tvatom.com/show/%s.json" % show
     episode_list = fetch_object_from_json_url_with_auth( url_show )
     
-## tkooda : 2014-11-23 : 
+    count_cached = 0
     for episode in episode_list:
 ##    for episode in episode_list[ : 25 ] : ## tkooda : 2014-11-23 : FIXME XXX DEBUG: only cache 25 episodes
         episode_season = episode.get( "season" )
@@ -384,31 +398,44 @@ def show_update( show ):
                                     show, episode_season, episode_num, episode_file ) #+ "|auth=any"
         if PLAY_THROUGH_ADDON:
 ## tkooda : 2014-09-22 : 
-#            cache_episode_strm( show, episode_season, episode_num,
-#                                build_appurl( { "action": "play",
-#                                                "show": show,
-#                                                "season": episode_season,
-#                                                "episode": episode_num } ),
-#                                episode_file )
-            cache_episode_strm_and_nfo( show,
-                                        episode_season,
-                                        episode_num,
-                                        build_appurl( { "action": "play",
-                                                        "show": show,
-                                                        "season": episode_season,
-                                                        "episode": episode_num } ),
-                                        episode_file,
-                                        episode_title )
+            count_cached += cache_episode_strm_and_nfo( show,
+                                                        episode_season,
+                                                        episode_num,
+                                                        build_appurl( { "action": "play",
+                                                                        "show": show,
+                                                                        "season": episode_season,
+                                                                        "episode": episode_num } ),
+                                                        episode_file,
+                                                        episode_title,
+                                                        force_update = force_update_strm_contents )
         else:
-            cache_episode_strm( show, episode_season, episode_num, url_episode )
+            count_cached += cache_episode_strm( show,
+                                                episode_season,
+                                                episode_num,
+                                                url_episode,
+                                                force_update = force_update_strm_contents )
         
 ## tkooda : 2014-11-23 : add tvshow.nfo symlinks to prevent XBMC from adding garbage show/series names when it finds a season directory that contains show directories
         path_episode_season_symlink = os.path.join( path_show, episode_season, "tvshow.nfo" )
         if not os.path.lexists( path_episode_season_symlink ):
             os.symlink( "../tvshow.nfo", path_episode_season_symlink )
+    
+    ## remove any extra strm files for this show..
+    count_removed = 0
+    if remove_extra:
+        do_debug( 1, "show_update()", "remove_extra:" )
+        
+        do_debug( 1, "show_update()", "remove_extra:", "XXXXXX FIXME TODO: WRITE THIS TREE WALK: delete episodes/seasons that don't exist in the json" )
+        do_debug( 1, "show_update()", "remove_extra:", "XXXXXX FIXME TODO: WRITE THIS TREE WALK: delete episodes/seasons that don't exist in the json" )
+        do_debug( 1, "show_update()", "remove_extra:", "XXXXXX FIXME TODO: WRITE THIS TREE WALK: delete episodes/seasons that don't exist in the json" )
         
     
     
+    if update_library and ( count_cached or count_removed ):
+        do_debug( 1, "show_update()", "update_library:", "UpdateLibrary(video,%s)" % path_show )
+        xbmc.executebuiltin( "UpdateLibrary(video,%s)" % path_show )
+    
+    return count_removed # so we can call "CleanLibrary(video)" outside of whatever loop is calling this
 
 
 def subscribe_show( show ):
@@ -431,9 +458,12 @@ def subscribe_show( show ):
     toggle_sub_unsub_files( show, "Unsubscribe" )
     
     path_show = os.path.join( PATH_STRM, show )
-    do_debug( 1, "UpdateLibrary(video,%s)" % path_show )
-    xbmc.executebuiltin( "UpdateLibrary(video,%s)" % path_show ) # detect any new files (e.g. newly added "Unsubscribe" file)
+    
+    do_debug( 1, "subscribe_show(): CleanLibrary(video)" )
     xbmc.executebuiltin( "CleanLibrary(video)" ) # detect removed (e.g. newly deleted "Subscribe" file) files
+    
+    do_debug( 1, "subscribe_show(): UpdateLibrary(video,%s)" % path_show )
+    xbmc.executebuiltin( "UpdateLibrary(video,%s)" % path_show ) # detect any new files (e.g. newly added "Unsubscribe" file)
 
 
 
@@ -464,8 +494,10 @@ def unsubscribe_show( show ):
         if s.get( "name" ) == show:
             cache_show_info( s.get( "name" ), s.get( "tvdb_id" ) )
     
+    do_debug( 1, "unsubscribe_show(): CleanLibrary(video)" )
     xbmc.executebuiltin( "CleanLibrary(video)" ) # http://wiki.xbmc.org/index.php?title=List_of_built-in_functions
-    do_debug( 1, "UpdateLibrary(video,%s)" % path_show )
+    
+    do_debug( 1, "unsubscribe_show(): UpdateLibrary(video,%s)" % path_show )
     xbmc.executebuiltin( "UpdateLibrary(video,%s)" % path_show ) # tell the library that this directory has been removed?
 
 
@@ -562,22 +594,23 @@ def cron_shows():
     setting_update_during_playback = xbmcaddon.Addon( "plugin.video.tvatom_tv_subscriber" ).getSetting( "update_during_playback" )
     if xbmc.Player().isPlaying() and not update_during_playback: # or utils.getSetting( "run_during_playback" ) == "true":
         do_debug( 1, "cron_shows(): xbmc.Player().isPlaying() WAS PLAYING" )
-        fp.close()
         return
     
-    updated = 0
+    updated_shows = []
     if not os.path.isdir( PATH_SUBSCRIBED ):
         os.makedirs( PATH_SUBSCRIBED )
-
+    
     for show in os.listdir( PATH_SUBSCRIBED ):
         do_debug( 1, "cron_shows(): SHOW:", show )
         if show_update( show ):
-            updated += 1
+            updated_shows.append( show )
     
-    if updated:
+    for show in updated_shows:
         path_show = os.path.join( PATH_STRM, show )
         do_debug( 1, "cron_update(): UpdateLibrary(video,%s)" % path_show )
         xbmc.executebuiltin( "UpdateLibrary(video,%s)" % path_show ) # detect any new files (e.g. newly added "Unsubscribe" file)
+    
+    if updated_shows:
         xbmc.executebuiltin( "CleanLibrary(video)" ) # detect removed (e.g. newly deleted "Subscribe" file) files
 
 
