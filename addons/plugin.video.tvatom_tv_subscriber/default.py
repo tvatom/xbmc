@@ -598,7 +598,7 @@ def cron_shows():
     ## update new episodes for shows from cron..
     
     setting_update_during_playback = xbmcaddon.Addon( "plugin.video.tvatom_tv_subscriber" ).getSetting( "update_during_playback" )
-    if xbmc.Player().isPlaying() and not update_during_playback: # or utils.getSetting( "run_during_playback" ) == "true":
+    if xbmc.Player().isPlaying() and not setting_update_during_playback: # or utils.getSetting( "run_during_playback" ) == "true":
         do_debug( 1, "cron_shows(): xbmc.Player().isPlaying() WAS PLAYING" )
         return
     
@@ -730,7 +730,7 @@ def main():
     ## CRONTAB:   30 4  * * *   xbmc-send --action="RunPlugin(plugin://plugin.video.tvatom_tv_subscriber?action=cron_update)"
     elif arg_action == "cron_update":
         setting_update_during_playback = xbmcaddon.Addon( "plugin.video.tvatom_tv_subscriber" ).getSetting( "update_during_playback" )
-        if not xbmc.Player().isPlaying() or update_during_playback == "true": # or utils.getSetting( "run_during_playback" ) == "true":
+        if not xbmc.Player().isPlaying() or setting_update_during_playback == "true": # or utils.getSetting( "run_during_playback" ) == "true":
             do_debug( 1, "cron_update: cache_nfo_for_all_shows()" )
             cache_nfo_for_all_shows()
             

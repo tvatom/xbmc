@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 ## tkooda : 2014-09-06 : xbmc video add-on
+## tkooda : 2014-11-27 : plugin.video.tvatom_tv_archive
 
 import os
 import sys
@@ -276,8 +277,6 @@ def main():
                                          listitem = list_item,
                                          isFolder = True,
                                          totalItems = len( show_list ) )
-            
-#            cache_show( show.get( "name" ), show.get( "tvdb_id" ) )
         
         
         xbmcplugin.endOfDirectory( addon_handle )

@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 ## tkooda : 2014-09-06 : xbmc video add-on
+## tkooda : 2014-11-28 : plugin.video.tvatom_movie_archive
+
 
 import os
 import sys
@@ -83,40 +85,6 @@ def write_file( path_file, data ):
         sys.stderr.flush()
         pass
     return num == len( data ) # return True == success
-
-
-## tkooda : 2014-11-24 : 
-##def cache_show( show, tvdb_id ):
-##    if not tvdb_id:
-##        return
-##    
-##    path_show = os.path.join( PATH_CACHE, show )
-##    if not os.path.isdir( path_show ):
-##        os.makedirs( path_show )
-##    
-##    path_show_nfo = os.path.join( path_show, "tvshow.nfo" )
-##    if os.path.exists( path_show_nfo ):
-##        return
-##    
-##    print "DEBUG: cache_show:", show, tvdb_id, path_show_nfo
-##    
-##    write_file( path_show_nfo,
-##                "http://thetvdb.com/?tab=series&id=%s" % tvdb_id )
-##
-##
-##def NOTYET_cache_episode( show, season, episode, url_strm ):
-##    path_episode = os.path.join( PATH_CACHE, show, season, episode )
-##    if not os.path.isdir( path_episode ):
-##        os.makedirs( path_episode )
-##    
-##    path_episode_strm = os.path.join( path_episode,
-##                                      os.path.basename( url_strm ) + ".strm" )
-##    if os.path.exists( path_episode_strm ):
-##        return
-##    
-##    print "DEBUG: cache_episode:", show, season, episode, url_strm, path_episode_strm
-##    
-##    write_file( path_episode_strm, url_strm )
 
 
 def get_settings():
