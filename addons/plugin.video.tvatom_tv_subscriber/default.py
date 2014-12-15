@@ -108,7 +108,7 @@ def fetch_object_from_json_url_with_auth( url, sortkey = None, warn_errors = Fal
     try:
         obj = json.loads( data_json )
     except:
-        obj = None
+        obj = []
         pass
     if sortkey:
         obj = sorted( obj, key = itemgetter( sortkey ) )

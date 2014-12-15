@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.tvatom_tv_subscriber" name="TVAtom TV Subscriber" version="0.0.17" provider-name="TVAtom">
+<addon id="plugin.video.tvatom_tv_subscriber" name="TVAtom TV Subscriber" version="0.0.18" provider-name="TVAtom">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
