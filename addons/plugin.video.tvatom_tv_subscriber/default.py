@@ -105,7 +105,11 @@ def fetch_url_with_auth( url, warn_errors = False ):
 
 def fetch_object_from_json_url_with_auth( url, sortkey = None, warn_errors = False ):
     data_json = fetch_url_with_auth( url, warn_errors )
-    obj = json.loads( data_json )
+    try:
+        obj = json.loads( data_json )
+    except:
+        obj = None
+        pass
     if sortkey:
         obj = sorted( obj, key = itemgetter( sortkey ) )
     return obj
