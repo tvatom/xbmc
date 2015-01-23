@@ -123,6 +123,11 @@ def get_settings():
     return setting_server, setting_username, setting_password
 
 
+def strip_leading_string( line, s ):
+    if line.lower().startswith( s.lower() ):
+	return line[ len(s) : ]
+    return line
+
 
 def main():
     do_debug( 1, "args:", sys.argv )
@@ -130,6 +135,8 @@ def main():
     ## init vars from args ..
     base_url = sys.argv[ 0 ]
     addon_handle = int( sys.argv[ 1 ] )
+    args = urlparse.parse_qs( sys.argv[ 2 ][ 1: ] )
+    arg_letter = args.get( 'letter', [ None ] )[ 0 ]
     
     ## set content type ..
     xbmcplugin.setContent( addon_handle, 'movies' )
@@ -146,15 +153,44 @@ def main():
     setting_password = xbmcaddon.Addon( "plugin.video.tvatom_movie_archive" ).getSetting( "password" )
     setting_server = xbmcaddon.Addon( "plugin.video.tvatom_movie_archive" ).getSetting( "server" )
     
-    if True:
+    
+    if not arg_letter:
+        import string
+        letters = list( string.ascii_lowercase )
+        letters.insert( 0, "0-9" )
+        for letter in letters:
+            appurl_letter = build_appurl( { "letter": letter } )
+            list_item = xbmcgui.ListItem( letter.upper() )
+            xbmcplugin.addDirectoryItem( handle = addon_handle,
+                                         url = appurl_letter,
+                                         listitem = list_item,
+                                         isFolder = True,
+                                         totalItems = len( letters ) )
+        xbmcplugin.endOfDirectory( addon_handle )
+        return
+    
+###############################
+
+            
+    else:
         url_index = "http://feed1.%s/index/movie.json" % setting_server
         movie_list = fetch_object_from_json_url_with_auth( url_index, sortkey = "name" )
         
         for movie in movie_list:
 #        for movie in movie_list[ 10 : 20 ]:  ## DEBUG
-            appurl_movie = build_appurl( { "movie": movie.get( "name" ) } )
             
             movie_name = movie.get( "name" )
+            
+            #### trunicate movie list
+            tmp_movie_name = strip_leading_string( movie_name, "a " )
+            tmp_movie_name = strip_leading_string( tmp_movie_name, "the " )
+            if arg_letter == "0-9":
+                if tmp_movie_name[0].isalpha():
+                    continue
+            else:
+                if not tmp_movie_name.lower().startswith( arg_letter ):
+                    continue
+            
             movie_files = movie.get( "files" )
             movie_code = movie.get( "code" )
             
@@ -165,6 +201,8 @@ def main():
             if not movie_files:
                 print "WARNING: MISSING: movie_files"
                 continue
+            
+            appurl_movie = build_appurl( { "movie": movie_name } )
             
             append_multipart = ""
             append_num = 1
