@@ -15,7 +15,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.tvatom_movie_archive" name="TVAtom Movie Archive" version="0.0.9" provider-name="TVAtom">
+<addon id="plugin.video.tvatom_movie_archive" name="TVAtom Movie Archive" version="0.0.10" provider-name="TVAtom">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
