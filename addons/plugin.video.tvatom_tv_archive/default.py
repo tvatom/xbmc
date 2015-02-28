@@ -156,6 +156,12 @@ def get_settings():
 
 
 
+def strip_leading_string( line, s ):
+    if line.lower().startswith( s.lower() ):
+        return line[ len(s) : ]
+    return line
+
+
 def main():
     print "DEBUG: args:", sys.argv
     
@@ -166,6 +172,7 @@ def main():
     arg_show = args.get( 'show', [ None ] )[ 0 ]
     arg_season = args.get( 'season', [ None ] )[ 0 ]
     arg_episode = args.get( 'episode', [ None ] )[ 0 ]
+    arg_letter = args.get( 'letter', [ None ] )[ 0 ]
     
     ## set content type ..
     xbmcplugin.setContent( addon_handle, 'tvshows' )
@@ -183,6 +190,26 @@ def main():
     setting_server = xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "server" )
     
     if not arg_show:
+        
+## tkooda : 2015-02-27 : 
+        if not arg_letter:
+            import string
+            letters = list( string.ascii_lowercase )
+            letters.insert( 0, "0-9" )
+            for letter in letters:
+                appurl_letter = build_appurl( { "letter": letter } )
+                list_item = xbmcgui.ListItem( letter.upper() )
+                xbmcplugin.addDirectoryItem( handle = addon_handle,
+                                             url = appurl_letter,
+                                             listitem = list_item,
+                                             isFolder = True,
+                                             totalItems = len( letters ) )
+                xbmcplugin.endOfDirectory( addon_handle )
+                return
+        
+        
+        
+        
         url_index = "http://feed1.tvatom.com/index/tv-show.json"
         show_list = fetch_object_from_json_url_with_auth( url_index,
                                                           sortkey = "name" )
@@ -251,14 +278,26 @@ def main():
 #]
 
         for show in show_list:
+## tkooda : 2015-02-27 : trunicate show list
+            show_name = show.get( "name" )
+            tmp_show_name = strip_leading_string( show_name, "a " )
+            tmp_show_name = strip_leading_string( tmp_show_name, "the " )
+            if arg_letter == "0-9":
+                if tmp_show_name[0].isalpha():
+                    continue
+            else:
+                if not tmp_show_name.lower().startswith( arg_letter ):
+                    continue
+
+
 #        for show in show_list[ 10 : 12 ]:  ## DEBUG
-            appurl_show = build_appurl( { "show": show.get( "name" ) } )
+            appurl_show = build_appurl( { "show": show_name } )
             
-            list_item = xbmcgui.ListItem( show.get( "tvshowtitle", show.get( "name" ) ),
+            list_item = xbmcgui.ListItem( show.get( "tvshowtitle", show_name ),
                                           )
 #                                          iconImage = "DefaultFolder.png" )
 
-#            if show.get( "name" ) == "30.rock":
+#            if show_name == "30.rock":
 #                print "30.rock"
 #                show[ "" ] = ""
 #            print "#################################################"
