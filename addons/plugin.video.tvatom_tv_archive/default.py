@@ -208,7 +208,7 @@ def main():
                                              listitem = list_item,
                                              isFolder = True,
                                              totalItems = len( letters ) )
-                xbmcplugin.endOfDirectory( addon_handle )
+            xbmcplugin.endOfDirectory( addon_handle )
             return
         
         do_debug( 1, "post-letters" )

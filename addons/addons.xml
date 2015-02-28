@@ -45,7 +45,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.tvatom_tv_archive" name="TVAtom TV Archive" version="0.0.13" provider-name="TVAtom">
+<addon id="plugin.video.tvatom_tv_archive" name="TVAtom TV Archive" version="0.0.14" provider-name="TVAtom">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
