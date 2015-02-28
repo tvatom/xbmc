@@ -211,7 +211,7 @@ def main():
             xbmcplugin.endOfDirectory( addon_handle )
             return
         
-        do_debug( 1, "post-letters" )
+#        do_debug( 1, "post-letters" )
         
         
         url_index = "http://feed1.tvatom.com/index/tv-show.json"
@@ -285,21 +285,21 @@ def main():
         for show in show_list:
 ## tkooda : 2015-02-27 : trunicate show list
             show_name = show.get( "name" )
-            tmp_show_name = strip_leading_string( show_name, "a " )
-            tmp_show_name = strip_leading_string( tmp_show_name, "the " )
+            show_title = show.get( "tvshowtitle", show_name )
+            tmp_show_title = strip_leading_string( show_title, "a " )
+            tmp_show_title = strip_leading_string( tmp_show_title, "the " )
             if arg_letter == "0-9":
-                if tmp_show_name[0].isalpha():
+                if tmp_show_title[0].isalpha():
                     continue
             else:
-                if not tmp_show_name.lower().startswith( arg_letter ):
+                if not tmp_show_title.lower().startswith( arg_letter ):
                     continue
 
 
 #        for show in show_list[ 10 : 12 ]:  ## DEBUG
             appurl_show = build_appurl( { "show": show_name } )
             
-            list_item = xbmcgui.ListItem( show.get( "tvshowtitle", show_name ),
-                                          )
+            list_item = xbmcgui.ListItem( show_title )
 #                                          iconImage = "DefaultFolder.png" )
 
 #            if show_name == "30.rock":
