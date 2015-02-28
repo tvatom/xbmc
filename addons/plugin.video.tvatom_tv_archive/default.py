@@ -190,13 +190,17 @@ def main():
     setting_server = xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "server" )
     
     if not arg_show:
+        do_debug( 1, "not arg_show" )
         
 ## tkooda : 2015-02-27 : 
         if not arg_letter:
+            do_debug( 1, "not arg_show and also not arg_letter" )
             import string
             letters = list( string.ascii_lowercase )
             letters.insert( 0, "0-9" )
+#            do_debug( 1, "pre-letters", letters )
             for letter in letters:
+#                do_debug( 1, "letter iterate", letter )
                 appurl_letter = build_appurl( { "letter": letter } )
                 list_item = xbmcgui.ListItem( letter.upper() )
                 xbmcplugin.addDirectoryItem( handle = addon_handle,
@@ -205,9 +209,9 @@ def main():
                                              isFolder = True,
                                              totalItems = len( letters ) )
                 xbmcplugin.endOfDirectory( addon_handle )
-                return
+            return
         
-        
+        do_debug( 1, "post-letters" )
         
         
         url_index = "http://feed1.tvatom.com/index/tv-show.json"
@@ -276,6 +280,7 @@ def main():
 #  "tvshowtitle": "37 Days"
 # }, 
 #]
+        do_debug( 1, "starting show_list.." )
 
         for show in show_list:
 ## tkooda : 2015-02-27 : trunicate show list
