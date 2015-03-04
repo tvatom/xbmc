@@ -215,8 +215,10 @@ def main():
         
         
         url_index = "http://feed1.tvatom.com/index/tv-show.json"
-        show_list = fetch_object_from_json_url_with_auth( url_index,
-                                                          sortkey = "name" )
+## tkooda : 2015-03-03 : it's already coming sorted, or use sort_name
+#        show_list = fetch_object_from_json_url_with_auth( url_index,
+#                                                          sortkey = "name" )
+        show_list = fetch_object_from_json_url_with_auth( url_index )
         
 ## tkooda : 2014-09-07 : DEBUG:
 #        show_list = [  {
