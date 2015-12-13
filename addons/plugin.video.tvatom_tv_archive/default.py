@@ -41,7 +41,32 @@ def build_appurl( query ):
         return "plugin://" + sys.argv[ 0 ][ len( "/storage/.xbmc/addons/" ) : ] + '?' + urllib.urlencode( query )
 
 
+def notification( msg ):
+    do_debug( 1, "notification()", msg )
+    
+    sys.exit( 0 )
+
+
+def test_internet():
+    try:
+        usock = urllib2.urlopen( "http://www.google.com/" )
+        data = usock.read()
+        usock.close()
+        if len( data ) < 10:
+            notifiation( "Internet connection down: got bad result from google.com" )
+    except:
+        do_debug( 1, "test_internet()", "exception" )
+        notifiation( "Internet connection down: couldn't access google.com" )
+        pass
+    
+    sys.exit( 9 )
+
+
 def fetch_url_with_auth( url ):
+    ## DEBUG:
+#    if xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "username" ) == "tkooda":
+#        url = "http://example.com"
+    
     request = urllib2.Request( url )
     
     password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -54,7 +79,12 @@ def fetch_url_with_auth( url ):
     
     urllib2.install_opener( opener )
     
-    handler = urllib2.urlopen( request )
+    try:
+        handler = urllib2.urlopen( request )
+#    except urllib2.URLError:
+    except:
+        test_internet( url )
+        pass
     
     # handler.getcode()
     # handler.headers.getheader('content-type')
