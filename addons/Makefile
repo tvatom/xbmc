@@ -1,5 +1,5 @@
 
-all: plugin.video.tvatom_tv_subscriber/addon.xml.md5 plugin.video.tvatom_tv_archive/addon.xml.md5 plugin.video.tvatom_movie_subscriber/addon.xml.md5 plugin.video.tvatom_movie_archive/addon.xml.md5
+all: plugin.video.tvatom_tv_subscriber/addon.xml.md5 plugin.video.tvatom_tv_archive/addon.xml.md5 plugin.video.tvatom_movie_subscriber/addon.xml.md5 plugin.video.tvatom_movie_archive/addon.xml.md5 plugin.video.tvatom_beta/addon.xml.md5
 	git push
 
 
@@ -44,7 +44,17 @@ plugin.video.tvatom_movie_archive/addon.xml.md5: plugin.video.tvatom_movie_archi
 	git commit -a --allow-empty-message -m "plugin.video.tvatom_movie_archive-`awk -F'"' '/addon id/{print $$6}' plugin.video.tvatom_movie_archive/addon.xml`"
 
 
-addons.xml.md5: addons.xml plugin.video.tvatom_tv_subscriber/addon.xml.md5 plugin.video.tvatom_tv_archive/addon.xml.md5 plugin.video.tvatom_movie_subscriber/addon.xml.md5 plugin.video.tvatom_movie_archive/addon.xml.md5
+plugin.video.tvatom_beta/addon.xml.md5: plugin.video.tvatom_beta/addon.xml plugin.video.tvatom_beta/default.py plugin.video.tvatom_beta/resources/settings.xml
+	openssl md5 plugin.video.tvatom_beta/addon.xml |cut -d ' ' -f2 > plugin.video.tvatom_beta/addon.xml.md5
+	git add plugin.video.tvatom_beta/addon.xml plugin.video.tvatom_beta/addon.xml.md5
+	./addons_xml_generator.py
+	mkdir -p ../zip/plugin.video.tvatom_beta/ 2>/dev/null
+	zip -r ../zip/plugin.video.tvatom_beta/plugin.video.tvatom_beta-`awk -F'"' '/addon id/{print $$6}' plugin.video.tvatom_beta/addon.xml`.zip plugin.video.tvatom_beta
+	git add ../zip/plugin.video.tvatom_beta/plugin.video.tvatom_beta-`awk -F'"' '/addon id/{print $$6}' plugin.video.tvatom_beta/addon.xml`.zip
+	git commit -a --allow-empty-message -m "plugin.video.tvatom_beta-`awk -F'"' '/addon id/{print $$6}' plugin.video.tvatom_beta/addon.xml`"
+
+
+addons.xml.md5: addons.xml plugin.video.tvatom_tv_subscriber/addon.xml.md5 plugin.video.tvatom_tv_archive/addon.xml.md5 plugin.video.tvatom_movie_subscriber/addon.xml.md5 plugin.video.tvatom_movie_archive/addon.xml.md5 plugin.video.tvatom_beta/addon.xml.md5
 	./addons_xml_generator.py
 	git commit -a --allow-empty-message -m ""
 	git push
