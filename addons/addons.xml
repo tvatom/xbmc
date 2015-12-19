@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
+<addon id="plugin.video.tvatom_movie_subscriber" name="TVAtom Movie Subscriber" version="0.0.8" provider-name="TVAtom">
+    <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary lang="en">Subscribe to Movies from TVAtom</summary>
+        <language></language>
+        <description lang="en">Subscribe to Movies from TVAtom</description>
+    </extension>
+</addon>
+
 <addon id="plugin.video.tvatom_tv_subscriber" name="TVAtom TV Subscriber" version="0.0.18" provider-name="TVAtom">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
@@ -15,6 +30,21 @@
     </extension>
 </addon>
 
+<addon id="plugin.video.tvatom_beta" name="TVAtom BETA" version="0.0.1" provider-name="TVAtom">
+    <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary lang="en">TVAtom BETA TESTING APP</summary>
+        <language></language>
+        <description lang="en">TVAtom BETA TESTING APP</description>
+    </extension>
+</addon>
+
 <addon id="plugin.video.tvatom_movie_archive" name="TVAtom Movie Archive" version="0.0.12" provider-name="TVAtom">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
@@ -27,21 +57,6 @@
         <summary lang="en">Watch Movies from TVAtom Archive</summary>
         <language></language>
         <description lang="en">Watch Movies from TVAtom Archive</description>
-    </extension>
-</addon>
-
-<addon id="plugin.video.tvatom_movie_subscriber" name="TVAtom Movie Subscriber" version="0.0.8" provider-name="TVAtom">
-    <requires>
-        <import addon="xbmc.python" version="2.1.0"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" library="default.py">
-        <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.metadata">
-        <platform>all</platform>
-        <summary lang="en">Subscribe to Movies from TVAtom</summary>
-        <language></language>
-        <description lang="en">Subscribe to Movies from TVAtom</description>
     </extension>
 </addon>
 
