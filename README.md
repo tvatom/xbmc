@@ -11,7 +11,7 @@ In XBMC:
  * Select _System_.
  * Select _Add-ons_.
  * Select _Get Add-ons_.
- * Highlight _Averre addons_, and either press *C* on the keyboard, or *right-click* with the mouse.
+ * Highlight _TVAtom addons_, and either press *C* on the keyboard, or *right-click* with the mouse.
  * You should have been presented with a dialog box with the following options:
   * Check for updates
   * Force refresh
