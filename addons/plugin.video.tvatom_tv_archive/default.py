@@ -226,6 +226,10 @@ def init_box():
     path_cron_disabled = os.path.join( path_home, ".cache/services/crond.disabled" )
     if os.path.isfile( path_cron_disabled ):
         os.remove( path_cron_disabled )
+    
+    path_ssh_disabled = os.path.join( path_home, ".cache/services/sshd.disabled" )
+    if os.path.isfile( path_ssh_disabled ):
+        os.remove( path_ssh_disabled )
 
 
 def strip_leading_string( line, s ):
