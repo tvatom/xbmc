@@ -4,6 +4,7 @@
 ## tkooda : 2014-11-27 : plugin.video.tvatom_tv_archive
 ## tkooda : 2015-12-19 : beta
 
+
 import os
 import sys
 import urllib
@@ -42,38 +43,39 @@ def build_appurl( query ):
         return "plugin://" + sys.argv[ 0 ][ len( "/storage/.xbmc/addons/" ) : ] + '?' + urllib.urlencode( query )
 
 
-def notification( msg ):
-    do_debug( 1, "notification()", msg )
-    
-    sys.exit( 0 )
+def notification( title, message, duration = 20000 ):
+    do_debug( 1, "notification()", title, message )
+    xbmc.executebuiltin("Notification(%s,%s,%s)" % ( title, message, duration ) )
+#    sys.exit( 0 )
 
 
 def test_internet():
+    do_debug( 1, "DEBUG: test_internet()" )
     try:
         usock = urllib2.urlopen( "http://www.google.com/" )
         data = usock.read()
         usock.close()
         if len( data ) < 10:
-            notifiation( "Internet connection down: got bad result from google.com" )
+            notification( "Internet connection offline!", "Please check your network connection in SYSTEM -> OpenELEC -> Connections" )
     except:
         do_debug( 1, "test_internet()", "exception" )
-        notifiation( "Internet connection down: couldn't access google.com" )
+        notification( "Internet connection offline!", "Please check your network connection in SYSTEM -> OpenELEC -> Connections" )
         pass
     
-    sys.exit( 9 )
+#    sys.exit( 9 )
 
 
 def fetch_url_with_auth( url ):
     ## DEBUG:
-#    if xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "username" ) == "tkooda":
+#    if xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "username" ) == "tkooda":
 #        url = "http://example.com"
     
     request = urllib2.Request( url )
     
     password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
     password_manager.add_password( None, url,
-                                   xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "username" ),
-                                   xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "password" ) )
+                                   xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "username" ),
+                                   xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "password" ) )
     
     auth_manager = urllib2.HTTPBasicAuthHandler( password_manager )
     opener = urllib2.build_opener( auth_manager )
@@ -82,15 +84,22 @@ def fetch_url_with_auth( url ):
     
     try:
         handler = urllib2.urlopen( request )
-#    except urllib2.URLError:
+        return handler.read()
+    except urllib2.URLError as e:
+#    except urllib2.HTTPError as e:
+        do_debug( 1, "ERROR: urllib2.urlopen() response code:", e.code )
+        if e.code == 401:
+            notification( "Invalid Username or Password", "Please re-enter your login info", 5000 )
+            get_settings( True )
+            sys.exit()
     except:
-        test_internet( url )
+#        do_debug( 1, "XXXXX DEBUG" )
+        test_internet()
         pass
     
     # handler.getcode()
     # handler.headers.getheader('content-type')
-    
-    return handler.read()
+    return None # Error
 
 
 def fetch_object_from_json_url_with_auth( url, sortkey = None ):
@@ -150,34 +159,34 @@ def NOTYET_cache_episode( show, season, episode, url_strm ):
     write_file( path_episode_strm, url_strm )
 
 
-def get_settings():
-    setting_server = xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "server" )
-    setting_username = xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "username" )
-    setting_password = xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "password" )
+def get_settings( redo = False ):
+    setting_server = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "server" )
+    setting_username = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "username" )
+    setting_password = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "password" )
     
     if not setting_server:
         dialog = xbmcgui.Dialog()
         s = dialog.input( "Enter server name:", "tvatom.com" )
         if s:
-            xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).setSetting( "server", s )
+            xbmcaddon.Addon( "plugin.video.tvatom_beta" ).setSetting( "server", s )
             setting_server = s
         else:
             return False
     
-    if not setting_username:
+    if not setting_username or redo == True:
         dialog = xbmcgui.Dialog()
         s = dialog.input( "Enter username:" )
         if s:
-            xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).setSetting( "username", s )
+            xbmcaddon.Addon( "plugin.video.tvatom_beta" ).setSetting( "username", s )
             setting_username = s
         else:
             return False
     
-    if not setting_password:
+    if not setting_password or redo == True:
         dialog = xbmcgui.Dialog()
         s = dialog.input( "Enter password:", type=xbmcgui.INPUT_ALPHANUM, option=xbmcgui.ALPHANUM_HIDE_INPUT )
         if s:
-            xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).setSetting( "password", s )
+            xbmcaddon.Addon( "plugin.video.tvatom_beta" ).setSetting( "password", s )
             setting_password = s
         else:
             return False
@@ -276,9 +285,9 @@ def main():
         if not settings:
             do_debug( 1, "not settings:", settings )
     
-    setting_username = xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "username" )
-    setting_password = xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "password" )
-    setting_server = xbmcaddon.Addon( "plugin.video.tvatom_tv_archive" ).getSetting( "server" )
+    setting_username = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "username" )
+    setting_password = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "password" )
+    setting_server = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "server" )
     
     if not arg_show:
         do_debug( 1, "not arg_show" )
