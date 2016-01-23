@@ -30,16 +30,15 @@ DEBUG = 9
 def do_debug( level, *args ):
     try:
         if level <= DEBUG:
-            print >>sys.stderr, "##### TVATOM DEBUG: %s (%d): %s" % ( os.path.basename( os.path.dirname( sys.argv[0] ) ), level, args )
+            print >>sys.stderr, "    #####   TVATOM DEBUG: %s (%d): %s" % ( os.path.basename( os.path.dirname( sys.argv[0] ) ), level, args )
     except:
         pass
 
 
 def build_appurl( query ):
-## tkooda : 2014-11-23 : 
     if sys.argv[ 0 ].startswith( "plugin://" ):
         return sys.argv[ 0 ] + '?' + urllib.urlencode( query )
-    else: # full path to file?
+    else: # if argv[0] is full path to file..?
         return "plugin://" + sys.argv[ 0 ][ len( "/storage/.xbmc/addons/" ) : ] + '?' + urllib.urlencode( query )
 
 
@@ -103,6 +102,31 @@ def fetch_object_from_json_url_with_auth( url, sortkey = None ):
     if sortkey:
         obj = sorted( obj, key = itemgetter( sortkey ) )
     return obj
+
+
+def get_file_url( path ):
+    path_local = os.path.join( PATH_CACHE, path )
+    if os.path.isfile( path_local ): # local files stored in same tree structure as online
+        return path_local
+    
+    path_local = os.path.join( PATH_CACHE, os.path.basename( path ) )
+    if os.path.isfile( path_local ): # check for local files just sitting in cache root
+        return path_local
+    
+    
+    
+    do_debug( 0, "TODO FIXME FIXME: check remote for file, otherwise play from archive" )
+    ## TODO FIXME : see if the file is available on remote, if so use that instead of archive
+    
+    
+    
+    
+    
+    url = os.path.join( "http://%s:%s@data1.tvatom.com/" % \
+                        ( xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "username" ),
+                          xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "password" ) ),
+                        path ) #+ "|auth=any"
+    return url
 
 
 def write_file( path_file, data ):
@@ -196,31 +220,51 @@ def init_box():
 
 
 def main():
-    print "DEBUG: args:", sys.argv
+    do_debug( 0, "ARGV:", sys.argv )
     
     init_box()
     
     ## init vars from args ..
     base_url = sys.argv[ 0 ]
     addon_handle = int( sys.argv[ 1 ] )
+    do_debug( 1, "addon_handle:", addon_handle )
     args = urlparse.parse_qs( sys.argv[ 2 ][ 1: ] )
-    arg_path = args.get( 'p', [ "" ] )[ 0 ]
-    arg_file = args.get( 'f', [ "" ] )[ 0 ]
     
+    ## for navigating..
+    arg_path = args.get( 'path', [ "" ] )[ 0 ]
     
-    ## play file:
-    if arg_file:
-        do_debug( 1, "trying to play:", arg_file )
-        
-        
-        
-        
-        
-        return
+    ## for populating the player-controls (and for the filename to find local/remote/archived) without having to fetch via json again..
+    arg_file = args.get( 'file', [ "" ] )[ 0 ]
+    arg_title = args.get( 'title', [ "" ] )[ 0 ]
+    arg_icon = args.get( 'icon', [ "" ] )[ 0 ]
+    arg_thumb = args.get( 'thumb', [ "" ] )[ 0 ]
     
     
     ## set content type ..
     xbmcplugin.setContent( addon_handle, 'tvshows' )
+    
+    
+    ## play file:
+    if arg_file:
+        do_debug( 1, "trying to play file:", arg_file )
+        
+        url_file = get_file_url( arg_file )
+        
+        xbmc.executebuiltin( "Playlist.Clear" )
+        player = xbmc.Player( xbmc.PLAYER_CORE_AUTO )
+        item = xbmcgui.ListItem( label = arg_title,
+                                 path = url_file,
+                                 iconImage = arg_icon,
+                                 thumbnailImage = arg_thumb )
+        # listitem.setInfo( type='Video', infoLabels=episode )
+        
+        xbmcplugin.setResolvedUrl( handle = addon_handle,
+                                   succeeded = True,
+                                   listitem = item )  ## workaround for "Error playing" bug, similar to: http://trac.xbmc.org/ticket/14192
+        
+        do_debug( 1, "player done:", url_file )
+        
+        return
     
     
     ## require (prompt for any missing) settings ..
@@ -256,11 +300,15 @@ def main():
         
         
         if d.get( "isdir" ):
-            url = build_appurl( { "p": d.get( "path" ) } )
+            url = build_appurl( { "path": d.get( "path" ) } )
         elif d.get( "path" ).startswith( "http" ):
-            url = d.get( "path" ) # play direct url
+            url = d.get( "path" ) # play direct url (without thumbnail/etc info in player-controls = FIXME?)
         else:
-            url = build_appurl( { "f": d.get( "path" ) } ) # play filename (check local, remote, then archive)
+            url = build_appurl( { "file": d.get( "path" ),
+                                  "title": d.get( "title" ),
+                                  "thumb": d.get( "thumb" ),
+                                  "icon": d.get( "icon" ),
+                              } ) # play filename (check local, remote, then archive)
         
         items.append( [ url, item, d.get( "isdir", False ) ] )
     
