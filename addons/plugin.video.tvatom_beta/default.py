@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-## tkooda : 2014-09-06 : xbmc video add-on
+## Tkooda : 2014-09-06 : xbmc video add-on
 ## tkooda : 2014-11-27 : plugin.video.tvatom_tv_archive
 ## tkooda : 2015-12-19 : beta
 
@@ -66,10 +66,6 @@ def test_internet():
 
 
 def fetch_url_with_auth( url ):
-    ## DEBUG:
-#    if xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "username" ) == "tkooda":
-#        url = "http://example.com"
-    
     request = urllib2.Request( url )
     
     password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -86,7 +82,6 @@ def fetch_url_with_auth( url ):
         handler = urllib2.urlopen( request )
         return handler.read()
     except urllib2.URLError as e:
-#    except urllib2.HTTPError as e:
         do_debug( 1, "ERROR: urllib2.urlopen() response code:", e.code )
         if e.code == 401:
             notification( "Invalid Username or Password", "Please re-enter your login info", 5000 )
@@ -124,39 +119,6 @@ def write_file( path_file, data ):
         sys.stderr.flush()
         pass
     return num == len( data ) # return True == success
-
-
-def cache_show( show, tvdb_id ):
-    if not tvdb_id:
-        return
-    
-    path_show = os.path.join( PATH_CACHE, show )
-    if not os.path.isdir( path_show ):
-        os.makedirs( path_show )
-    
-    path_show_nfo = os.path.join( path_show, "tvshow.nfo" )
-    if os.path.exists( path_show_nfo ):
-        return
-    
-    print "DEBUG: cache_show:", show, tvdb_id, path_show_nfo
-    
-    write_file( path_show_nfo,
-                "http://thetvdb.com/?tab=series&id=%s" % tvdb_id )
-
-
-def NOTYET_cache_episode( show, season, episode, url_strm ):
-    path_episode = os.path.join( PATH_CACHE, show, season, episode )
-    if not os.path.isdir( path_episode ):
-        os.makedirs( path_episode )
-    
-    path_episode_strm = os.path.join( path_episode,
-                                      os.path.basename( url_strm ) + ".strm" )
-    if os.path.exists( path_episode_strm ):
-        return
-    
-    print "DEBUG: cache_episode:", show, season, episode, url_strm, path_episode_strm
-    
-    write_file( path_episode_strm, url_strm )
 
 
 def get_settings( redo = False ):
@@ -232,11 +194,6 @@ def init_box():
         os.remove( path_ssh_disabled )
 
 
-def strip_leading_string( line, s ):
-    if line.lower().startswith( s.lower() ):
-        return line[ len(s) : ]
-    return line
-
 
 def main():
     print "DEBUG: args:", sys.argv
@@ -247,15 +204,25 @@ def main():
     base_url = sys.argv[ 0 ]
     addon_handle = int( sys.argv[ 1 ] )
     args = urlparse.parse_qs( sys.argv[ 2 ][ 1: ] )
-    arg_show = args.get( 'show', [ None ] )[ 0 ]
-    arg_season = args.get( 'season', [ None ] )[ 0 ]
-    arg_episode = args.get( 'episode', [ None ] )[ 0 ]
-    arg_letter = args.get( 'letter', [ None ] )[ 0 ]
+    arg_path = args.get( 'p', [ "" ] )[ 0 ]
+    arg_file = args.get( 'f', [ "" ] )[ 0 ]
+    
+    
+    ## play file:
+    if arg_file:
+        do_debug( 1, "trying to play:", arg_file )
+        
+        
+        
+        
+        
+        return
+    
     
     ## set content type ..
     xbmcplugin.setContent( addon_handle, 'tvshows' )
     
-
+    
     ## require (prompt for any missing) settings ..
     settings = False
     while not settings:
@@ -265,196 +232,46 @@ def main():
     
     setting_username = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "username" )
     setting_password = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "password" )
-    setting_server = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "server" )
-    
-    if not arg_show:
-        do_debug( 1, "not arg_show" )
-        
-## tkooda : 2015-02-27 : 
-        if not arg_letter:
-            do_debug( 1, "not arg_show and also not arg_letter" )
-            import string
-            letters = list( string.ascii_lowercase )
-            letters.insert( 0, "0-9" )
-#            do_debug( 1, "pre-letters", letters )
-            for letter in letters:
-#                do_debug( 1, "letter iterate", letter )
-                appurl_letter = build_appurl( { "letter": letter } )
-                list_item = xbmcgui.ListItem( letter.upper() )
-                xbmcplugin.addDirectoryItem( handle = addon_handle,
-                                             url = appurl_letter,
-                                             listitem = list_item,
-                                             isFolder = True,
-                                             totalItems = len( letters ) )
-            xbmcplugin.endOfDirectory( addon_handle )
-            return
-        
-#        do_debug( 1, "post-letters" )
-        
-        
-        url_index = "http://feed1.tvatom.com/index/tv-show.json"
-## tkooda : 2015-03-03 : it's already coming sorted, or use sort_name
-#        show_list = fetch_object_from_json_url_with_auth( url_index,
-#                                                          sortkey = "name" )
-        show_list = fetch_object_from_json_url_with_auth( url_index )
-        
-## tkooda : 2014-09-07 : DEBUG:
-#        show_list = [  {
-#  "code": "tt0496424", 
-#  "imdb": "tt0496424", 
-#  "dateadded": "2014-08-31 09:01:57", 
-#  "name": "30.rock", 
-#  "plot": "Emmy Award Winner Tina Fey writes, executive produces and stars as Liz Lemon, the head writer of a live variety programme in New York City. Liz's life is turned upside down when brash new network executive Jack Donaghy (Alec Baldwin in his Golden Globe winning role) interferes with her show, bringing the wildly unpredictable Tracy Jordan (Tracy Morgan) into the cast. Now its up to Liz to manage the mayhem and still try to have a life.", 
-#  "premiered": "2006-10-11", 
-#  "status": "Ended", 
-#  "studio": "NBC", 
-#  "tvdb_id": "79488", 
-#  "tvdbid": "79488", 
-#  "tvdb": "79488", 
-#  "id": "79488", 
-#  "tvshowtitle": "30 Rock",
-#
-#  "": "",
-
-#    "genre": "Comedy",
-#    "year": 2009,
-#    "episode": 4,
-#    "season": 1,
-#    "top250": 192,
-#    "tracknumber": 3,
-#    "rating": 6.4, # - range is 0..10
-#    "playcount": 2, # - number of times this item has been played
-#    "overlay": 2, # - range is 0..8.  See GUIListItem.h for values
-##    "cast": list (Michal C. Hall)
-##    "castandrole": list (Michael C. Hall|Dexter)
-#    "director": "Dagur Kari",
-#    "mpaa": "PG-13",
-#    "plot": "Long Description",
-#    "plotoutline": "Short Description",
-#    "title": "Big Fan",
-#    "originaltitle": "Big Fan",
-#    "duration": "3:18",
-#    "studio": "Warner Bros.",
-#    "tagline": "An awesome movie", # - short description of movie
-#    "writer": "Robert D. Siegel",
-#    "premiered": "2005-03-04",
-#    "status": "Continuing", # - status of a TVshow
-#    "code": "tt0110293", # - IMDb code
-#    "aired": "2008-12-07",
-#    "credits": "Andy Kaufman", # - writing credits
-#    "lastplayed": "2009-04-05 23:16:04",
-#    "album": "The Joshua Tree",
-#    "votes": "12345 votes",
-#    "trailer": "/home/user/trailer.avi",
-#  "": "",
-# }, 
-# {
-#  "code": "tt3101352", 
-#  "dateadded": "2014-07-18 21:54:40", 
-#  "name": "37.days", 
-#  "plot": "Covering the final weeks before the outbreak of war, 37 Days follows the rapidly changing crisis through the eyes of the principal players, during a hot summer, from the assassination of Archduke Franz Ferdinand on 28 June 1914, to the declaration of war between Britain and Germany on 4 August.\n\nThe drama serial will overturn orthodox assumptions about the wars inevitability. Such a disaster did not happen by chance, and nor was it a foregone conclusion. It took considerable effort and terrific ingenuity, as well as staggering bad luck, to destroy a system that had kept the general peace in Europe for the 99 years that followed the Battle of Waterloo and the fall of Napoleon.\n\nWriter Mark Hayhurst comes fresh from the success of Hitler On Trial for BBC Two, which starred Ed Stoppard and Ian Hart. He has previously written award-winning docu-dramas for major broadcasters, such as Robespierre And The French Revolution, Last Days Of The Raj, The Somme and The Year London Blew Up", 
-#  "premiered": "2014-03-06", 
-#  "status": "Ended", 
-#  "studio": "BBC Two", 
-#  "tvdb_id": "274115", 
-#  "tvshowtitle": "37 Days"
-# }, 
-#]
-        do_debug( 1, "starting show_list.." )
-
-        for show in show_list:
-## tkooda : 2015-02-27 : trunicate show list
-            show_name = show.get( "name" )
-            show_title = show.get( "tvshowtitle", show_name )
-            tmp_show_title = strip_leading_string( show_title, "a " )
-            tmp_show_title = strip_leading_string( tmp_show_title, "the " )
-            if arg_letter == "0-9":
-                if tmp_show_title[0].isalpha():
-                    continue
-            else:
-                if not tmp_show_title.lower().startswith( arg_letter ):
-                    continue
-
-
-#        for show in show_list[ 10 : 12 ]:  ## DEBUG
-            appurl_show = build_appurl( { "show": show_name } )
-            
-            list_item = xbmcgui.ListItem( show_title )
-#                                          iconImage = "DefaultFolder.png" )
-
-#            if show_name == "30.rock":
-#                print "30.rock"
-#                show[ "" ] = ""
-#            print "#################################################"
-#            print "DEBUG: ################### OBJECT:"
-#            print json.dumps( show, sort_keys = True, indent = 2 )
-#            print "#################################################"
-            
-            list_item.setInfo( "video", infoLabels = show )
-            
-            
-            ## XXX FIXME TODO: add more info here: e.g. show name
-            
-            
-            xbmcplugin.addDirectoryItem( handle = addon_handle,
-                                         url = appurl_show,
-                                         listitem = list_item,
-                                         isFolder = True,
-                                         totalItems = len( show_list ) )
-        
-        
-        xbmcplugin.endOfDirectory( addon_handle )
-        
-        return # done building show index
+    setting_server   = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "server" )
     
     
-    if arg_show and not arg_episode:
-        url_show = "http://feed1.tvatom.com/show/%s.json" % arg_show
-        episode_list = fetch_object_from_json_url_with_auth( url_show )
+    ## get json..
+    data = fetch_object_from_json_url_with_auth( "http://app.tvatom.com/bin/demo-tvatom.py?p=%s" % arg_path )
+    
+    items = []
+    for d in data:
+        item = xbmcgui.ListItem( d.get( "label" ),
+                                 iconImage = d.get( "icon" ),
+                                 thumbnailImage = d.get( "thumb" ) )
+        if d.get( "label2" ):
+            item.setLabel2( d.get( "label2" ) )
+        if d.get( "info" ):
+            item.setInfo( "video", d.get( "info" ) )
+        if d.get( "art" ):
+            item.setArt( d.get( "art" ) )
+#        if d.get( "icon" ):
+#            item.setIconImage( d.get( "icon" ) )
+#        if d.get( "thumb" ):
+#            item.setThumbnailImage( d.get( "thumb" ) ) # shows on player-controls screen
         
-        for episode in episode_list:
-            episode_season = episode.get( "season" )
-            episode_num = episode.get( "episode" )
-            episode_file = episode.get( "file" )
-            episode_title = episode.get( "tvshowtitle" )
-            
-            if not episode_season:
-                print "WARNING: MISSING: episode_season"
-                continue
-            
-            if not episode_num:
-                print "WARNING: MISSING: episode_num"
-                continue
-            
-            if not episode_file:
-                print "WARNING: MISSING: episode_file"
-                continue
-            
-            list_item = xbmcgui.ListItem( "s%se%s - %s" % ( episode_season,
-                                                            episode_num,
-                                                            episode_title ),
-                                          iconImage = "DefaultVideo.png" )
-            
-            list_item.setInfo( "video", episode )
-            
-            
-            
-            ## XXX FIXME TODO: add more info here: e.g. show name
-            
-            
-            
-            url_episode = os.path.join( "http://%s:%s@data1.%s/show/" % ( setting_username, setting_password, setting_server ),
-                                        arg_show, episode_season, episode_num, episode_file ) #+ "|auth=any"
-            
-            xbmcplugin.addDirectoryItem( handle = addon_handle,
-                                         url = url_episode,
-                                         listitem = list_item,
-                                         totalItems = len( episode_list ) )
-            
         
-        xbmcplugin.endOfDirectory( addon_handle )
+        if d.get( "isdir" ):
+            url = build_appurl( { "p": d.get( "path" ) } )
+        elif d.get( "path" ).startswith( "http" ):
+            url = d.get( "path" ) # play direct url
+        else:
+            url = build_appurl( { "f": d.get( "path" ) } ) # play filename (check local, remote, then archive)
         
-        return # done building episode index
+        items.append( [ url, item, d.get( "isdir", False ) ] )
+    
+    
+    xbmcplugin.addDirectoryItems( addon_handle, items, len( data ) )
+    
+    xbmcplugin.endOfDirectory( addon_handle )
+    return
+
+#            url_episode = os.path.join( "http://%s:%s@data1.%s/show/" % ( setting_username, setting_password, setting_server ),
+#                                        arg_show, episode_season, episode_num, episode_file ) #+ "|auth=any"
 
 
 if __name__ == "__main__":
