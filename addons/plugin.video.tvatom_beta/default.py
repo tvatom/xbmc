@@ -21,6 +21,8 @@ import xbmcgui
 import xbmcaddon
 import xbmcplugin
 
+import httplib2
+
 
 PATH_CACHE = "/storage/tvatom-cache"
 ADDON_NAME = "plugin.video.tvatom_beta"
@@ -45,7 +47,10 @@ def build_appurl( query ):
 
 def notification( title, message, duration = 20000, image = None ):
     do_debug( 1, "notification()", title, message )
-    xbmc.executebuiltin("Notification(%s,%s,%s,%s)" % ( title, message, duration, image ) )
+    if image:
+        xbmc.executebuiltin("Notification(%s,%s,%s,%s)" % ( title, message, duration, image ) )
+    else:
+        xbmc.executebuiltin("Notification(%s,%s,%s)" % ( title, message, duration ) ) # use default image
 #    sys.exit( 0 )
 
 
@@ -72,6 +77,8 @@ def fetch_url_with_auth( url ):
     password_manager.add_password( None, url,
                                    xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
                                    xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
+    do_debug( 1, "using auth:", xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+              xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ), url )
     
     auth_manager = urllib2.HTTPBasicAuthHandler( password_manager )
     opener = urllib2.build_opener( auth_manager )
@@ -82,10 +89,13 @@ def fetch_url_with_auth( url ):
         handler = urllib2.urlopen( request )
         return handler.read()
     except urllib2.URLError as e:
-        do_debug( 1, "ERROR: urllib2.urlopen() response code:", e.code )
+        do_debug( 1, "ERROR: urllib2.urlopen() response code:", e.code, url )
         if e.code == 401:
             notification( "Invalid Username or Password", "Please re-enter your login info", 5000 )
             get_settings( True )
+            sys.exit()
+        elif e.code == 500:
+            notification( "Server Error:", "Error 500 on: " + url )
             sys.exit()
     except:
 #        do_debug( 1, "XXXXX DEBUG" )
@@ -97,8 +107,50 @@ def fetch_url_with_auth( url ):
     return None # Error
 
 
+def fetch_url_with_auth_v2( url ):
+#    request = urllib2.Request( url )
+#    
+#    password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+#    password_manager.add_password( None, url,
+#                                   xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+#                                   xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
+#    do_debug( 1, "using auth:", xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+#              xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ), url )
+#    
+#    auth_manager = urllib2.HTTPBasicAuthHandler( password_manager )
+#    opener = urllib2.build_opener( auth_manager )
+#    
+#    urllib2.install_opener( opener )
+#    
+#    try:
+#        handler = urllib2.urlopen( request )
+#        return handler.read()
+#    except urllib2.URLError as e:
+#        do_debug( 1, "ERROR: urllib2.urlopen() response code:", e.code, url )
+#        if e.code == 401:
+#            notification( "Invalid Username or Password", "Please re-enter your login info", 5000 )
+##DEBUG FOXME FIXME FIXME GTEMP DISABLE            get_settings( True )
+#            sys.exit()
+#    except:
+##        do_debug( 1, "XXXXX DEBUG" )
+#        test_internet()
+#        pass
+#    
+#    # handler.getcode()
+#    # handler.headers.getheader('content-type')
+#    return None # Error
+    h = httplib2.Http()
+    h.add_credentials( xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+                       xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
+    response, content = h.request( url )
+    do_debug( 8, "fetch_url_with_auth_v2() response:", response )
+    do_debug( 8, "fetch_url_with_auth_v2() content:", content )
+    return content
+
+
 def fetch_object_from_json_url_with_auth( url, sortkey = None ):
     data_json = fetch_url_with_auth( url )
+#    data_json = fetch_url_with_auth_v2( url )
     obj = json.loads( data_json )
     if sortkey:
         obj = sorted( obj, key = itemgetter( sortkey ) )
@@ -112,7 +164,6 @@ def is_url_available( url ): # BEWARE: this cannot handle the "username:password
 #    print response.info()
 #    url = "http://www.google.com/"
     do_debug( 5, "is_url_available():", url )
-    import httplib2
     h = httplib2.Http()
     h.add_credentials( xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
                        xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
@@ -314,7 +365,7 @@ def main():
     
     ## get json..
 #    data = fetch_object_from_json_url_with_auth( "http://app.tvatom.com/bin/demo-tvatom.py?p=%s" % arg_path )
-    data = fetch_object_from_json_url_with_auth( "http://tvatom.appspot.com/v2/%s" % arg_path )
+    data = fetch_object_from_json_url_with_auth( "https://tvatom2.appspot.com/v2/%s" % arg_path )
     
     ## set content type ..
     xbmcplugin.setContent( addon_handle, 'tvshows' )
