@@ -281,16 +281,16 @@ def main():
     ## get json..
     data = fetch_object_from_json_url_with_auth( "http://app.tvatom.com/bin/demo-tvatom.py?p=%s" % arg_path )
     
-    do_debug( 0, "isdirs:", data.get( "isdirs", "WTF WTF WTF WTF" ) )
-    if data.get( "isdirs" ):
-        do_debug( 0, "isdirs pass:" )
+#    do_debug( 0, "isdirs:", data.get( "isdirs", "WTF WTF WTF WTF" ) )
+#    if data.get( "isdirs" ):
+#        do_debug( 0, "isdirs pass:" )
     
     ## set content type ..
     xbmcplugin.setContent( addon_handle, 'tvshows' )
-        
-#    items = [] # FAILS: adding all at once fails?  (perhaps per mix of files and videos????? )
-#    for d in data:
-    for d in data[ "items" ]:
+    
+    items = [] # FAILS: adding all at once fails?  (perhaps per mix of files and videos????? )
+    for d in data:
+#    for d in data[ "items" ]:
         item = xbmcgui.ListItem( d.get( "label" ),
                                  iconImage = d.get( "icon" ),
                                  thumbnailImage = d.get( "thumb" ) )
@@ -307,35 +307,50 @@ def main():
         
 #        if d.get( "isdir" ):
 #        if data.get( "isdirs" ):
-        if False:
-            do_debug( 1, "  DDDDDDDDDDDDDD  isdirs:", data.get( "isdirs" ) )
-            url = build_appurl( { "path": d.get( "path" ) } )
-        elif d.get( "path" ).startswith( "http" ):
-            do_debug( 1, "PATH IS HTTP" )
-            url = d.get( "path" ) # play direct url (without thumbnail/etc info in player-controls = FIXME?)
-        else:
-            do_debug( 1, "ELSE ELSE ELSE" )
-            url = build_appurl( { "file": d.get( "path" ),
+
+        if d.get( "file" ):
+            do_debug( 1, " FILE FILE FILE " )
+            url = build_appurl( { "file": d.get( "file" ),
                                   "label": d.get( "label" ),
                                   "thumb": d.get( "thumb" ),
                                   "icon": d.get( "icon" ),
                               } ) # play filename (check local, remote, then archive)
+            item.setProperty( "isplayable", "true" ) # this is required to avoid addon_handle=-1 error!
+            is_folder = False
+        else:
+            do_debug( 1, " NOT A FILE, USE PATH:", d.get( "path" ) )
+            url = build_appurl( { "path": d.get( "path" ) } )
+            is_folder = True
+            
+#        elif d.get( "path" ).startswith( "http" ):
+#            do_debug( 1, "PATH IS HTTP" )
+#            url = d.get( "path" ) # play direct url (without thumbnail/etc info in player-controls = FIXME?)
+#            is_folder = False
+#            item.setProperty( "isplayable", "true" ) # holy
+#        else:
+#            do_debug( 1, "ELSE ELSE ELSE" )
+#            url = build_appurl( { "file": d.get( "path" ),
+#                                  "label": d.get( "label" ),
+#                                  "thumb": d.get( "thumb" ),
+#                                  "icon": d.get( "icon" ),
+#                              } ) # play filename (check local, remote, then archive)
+#            is_folder = True
         
         do_debug( 0, "url:", url )
         do_debug( 0, "addon_handle:", addon_handle )
-        item.setProperty( "isplayable", "true" ) # holy shit!
-        xbmcplugin.addDirectoryItem( handle = addon_handle,
-                                     url = url,
-                                     listitem = item,
-#                                     isFolder = data.get( "isdirs" ),
-#                                     isFolder = True, # MUST be true if we're going to play through the addon
-                                     isFolder = False, # if set to True = then Kodi expects a directory listing!!!???
-                                     totalItems = len( data[ "items" ] ) )
-        
-#        items.append( [ url, item, data.get( "isdirs" ) ] )
+## tkooda : 2016-01-23 : 
+#        xbmcplugin.addDirectoryItem( handle = addon_handle,
+#                                     url = url,
+#                                     listitem = item,
+##                                     isFolder = data.get( "isdirs" ),
+##                                     isFolder = True, # MUST be true if we're going to play through the addon
+#                                     isFolder = False, # if set to True = then Kodi expects a directory listing!!!???
+#                                     totalItems = len( data[ "items" ] ) )
+
+        items.append( [ url, item, is_folder ] )
     
     
-#    xbmcplugin.addDirectoryItems( addon_handle, items, len( data[ "items" ] ) )
+    xbmcplugin.addDirectoryItems( addon_handle, items, len( data ) )
 
     
     xbmcplugin.endOfDirectory( addon_handle )
