@@ -235,13 +235,9 @@ def main():
     
     ## for populating the player-controls (and for the filename to find local/remote/archived) without having to fetch via json again..
     arg_file = args.get( 'file', [ "" ] )[ 0 ]
-    arg_title = args.get( 'title', [ "" ] )[ 0 ]
+    arg_label = args.get( 'label', [ "" ] )[ 0 ]
     arg_icon = args.get( 'icon', [ "" ] )[ 0 ]
     arg_thumb = args.get( 'thumb', [ "" ] )[ 0 ]
-    
-    
-    ## set content type ..
-    xbmcplugin.setContent( addon_handle, 'tvshows' )
     
     
     ## play file:
@@ -251,12 +247,15 @@ def main():
         url_file = get_file_url( arg_file )
         
         xbmc.executebuiltin( "Playlist.Clear" )
+        
         player = xbmc.Player( xbmc.PLAYER_CORE_AUTO )
-        item = xbmcgui.ListItem( label = arg_title,
+        
+        do_debug( 1, "url_file:", url_file )
+        item = xbmcgui.ListItem( label = arg_label,
                                  path = url_file,
                                  iconImage = arg_icon,
                                  thumbnailImage = arg_thumb )
-        # listitem.setInfo( type='Video', infoLabels=episode )
+        item.setInfo( "video", { "title": arg_label } )  # not needed???
         
         xbmcplugin.setResolvedUrl( handle = addon_handle,
                                    succeeded = True,
@@ -282,8 +281,16 @@ def main():
     ## get json..
     data = fetch_object_from_json_url_with_auth( "http://app.tvatom.com/bin/demo-tvatom.py?p=%s" % arg_path )
     
-    items = []
-    for d in data:
+    do_debug( 0, "isdirs:", data.get( "isdirs", "WTF WTF WTF WTF" ) )
+    if data.get( "isdirs" ):
+        do_debug( 0, "isdirs pass:" )
+    
+    ## set content type ..
+    xbmcplugin.setContent( addon_handle, 'tvshows' )
+        
+#    items = [] # FAILS: adding all at once fails?  (perhaps per mix of files and videos????? )
+#    for d in data:
+    for d in data[ "items" ]:
         item = xbmcgui.ListItem( d.get( "label" ),
                                  iconImage = d.get( "icon" ),
                                  thumbnailImage = d.get( "thumb" ) )
@@ -298,22 +305,38 @@ def main():
 #        if d.get( "thumb" ):
 #            item.setThumbnailImage( d.get( "thumb" ) ) # shows on player-controls screen
         
-        
-        if d.get( "isdir" ):
+#        if d.get( "isdir" ):
+#        if data.get( "isdirs" ):
+        if False:
+            do_debug( 1, "  DDDDDDDDDDDDDD  isdirs:", data.get( "isdirs" ) )
             url = build_appurl( { "path": d.get( "path" ) } )
         elif d.get( "path" ).startswith( "http" ):
+            do_debug( 1, "PATH IS HTTP" )
             url = d.get( "path" ) # play direct url (without thumbnail/etc info in player-controls = FIXME?)
         else:
+            do_debug( 1, "ELSE ELSE ELSE" )
             url = build_appurl( { "file": d.get( "path" ),
-                                  "title": d.get( "title" ),
+                                  "label": d.get( "label" ),
                                   "thumb": d.get( "thumb" ),
                                   "icon": d.get( "icon" ),
                               } ) # play filename (check local, remote, then archive)
         
-        items.append( [ url, item, d.get( "isdir", False ) ] )
+        do_debug( 0, "url:", url )
+        do_debug( 0, "addon_handle:", addon_handle )
+        item.setProperty( "isplayable", "true" ) # holy shit!
+        xbmcplugin.addDirectoryItem( handle = addon_handle,
+                                     url = url,
+                                     listitem = item,
+#                                     isFolder = data.get( "isdirs" ),
+#                                     isFolder = True, # MUST be true if we're going to play through the addon
+                                     isFolder = False, # if set to True = then Kodi expects a directory listing!!!???
+                                     totalItems = len( data[ "items" ] ) )
+        
+#        items.append( [ url, item, data.get( "isdirs" ) ] )
     
     
-    xbmcplugin.addDirectoryItems( addon_handle, items, len( data ) )
+#    xbmcplugin.addDirectoryItems( addon_handle, items, len( data[ "items" ] ) )
+
     
     xbmcplugin.endOfDirectory( addon_handle )
     return
