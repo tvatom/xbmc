@@ -22,7 +22,7 @@ import xbmcplugin
 
 
 PATH_CACHE = "/storage/tvatom-cache"
-
+ADDON_NAME = "plugin.video.tvatom_beta"
 
 DEBUG = 9
 
@@ -42,9 +42,9 @@ def build_appurl( query ):
         return "plugin://" + sys.argv[ 0 ][ len( "/storage/.xbmc/addons/" ) : ] + '?' + urllib.urlencode( query )
 
 
-def notification( title, message, duration = 20000 ):
+def notification( title, message, duration = 20000, image = None ):
     do_debug( 1, "notification()", title, message )
-    xbmc.executebuiltin("Notification(%s,%s,%s)" % ( title, message, duration ) )
+    xbmc.executebuiltin("Notification(%s,%s,%s,%s)" % ( title, message, duration, image ) )
 #    sys.exit( 0 )
 
 
@@ -69,8 +69,8 @@ def fetch_url_with_auth( url ):
     
     password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
     password_manager.add_password( None, url,
-                                   xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "username" ),
-                                   xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "password" ) )
+                                   xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+                                   xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
     
     auth_manager = urllib2.HTTPBasicAuthHandler( password_manager )
     opener = urllib2.build_opener( auth_manager )
@@ -104,29 +104,54 @@ def fetch_object_from_json_url_with_auth( url, sortkey = None ):
     return obj
 
 
+def is_url_available( url ): # BEWARE: this cannot handle the "username:password@" string in the URL like Kodi requires for it's URLs!!!
+#    request = urllib2.Request( url )
+#    request.get_method = lambda : 'HEAD'
+#    response = urllib2.urlopen( request )
+#    print response.info()
+#    url = "http://www.google.com/"
+    do_debug( 5, "is_url_available():", url )
+    import httplib2
+    h = httplib2.Http()
+    h.add_credentials( xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+                       xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
+    resp = h.request( url, "HEAD" )
+    do_debug( 8, "is_url_available() result:", resp[0][ "status" ] )
+    return resp[0][ "status" ] == 200
+
+
+
 def get_file_url( path ):
     path_local = os.path.join( PATH_CACHE, path )
     if os.path.isfile( path_local ): # local files stored in same tree structure as online
+        notification( "Found video in local cache", "Playing from local cache", 10000,
+                      "/storage/.xbmc/addons/%s/cached.png" % ADDON_NAME )
         return path_local
     
     path_local = os.path.join( PATH_CACHE, os.path.basename( path ) )
     if os.path.isfile( path_local ): # check for local files just sitting in cache root
+        notification( "Found video in local cache", "Playing from local cache", 10000,
+                      "/storage/.xbmc/addons/%s/cached.png" % ADDON_NAME )
         return path_local
     
+#    url = os.path.join( "http://%s:%s@data1.tvatom.com/" % \
+#                        ( xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+#                          xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) ),
+#                        path ) #+ "|auth=any"
     
+    for host in xbmcaddon.Addon( ADDON_NAME ).getSetting( "servers" ).split():
+        
+        url_base = os.path.join( host, path ) #+ "|auth=any"
+        if is_url_available( "http://" + url_base ):
+            do_debug( 5, "found file at remote url:", url_base )
+            url_auth = "http://%s:%s@%s" % ( xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+                                             xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ),
+                                             url_base )
+            return url_auth
     
-    do_debug( 0, "TODO FIXME FIXME: check remote for file, otherwise play from archive" )
-    ## TODO FIXME : see if the file is available on remote, if so use that instead of archive
+    notification( "ERROR:", "Could not find remote file" )
     
-    
-    
-    
-    
-    url = os.path.join( "http://%s:%s@data1.tvatom.com/" % \
-                        ( xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "username" ),
-                          xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "password" ) ),
-                        path ) #+ "|auth=any"
-    return url
+    return None
 
 
 def write_file( path_file, data ):
@@ -146,15 +171,15 @@ def write_file( path_file, data ):
 
 
 def get_settings( redo = False ):
-    setting_server = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "server" )
-    setting_username = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "username" )
-    setting_password = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "password" )
+    setting_server = xbmcaddon.Addon( ADDON_NAME ).getSetting( "server" )
+    setting_username = xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" )
+    setting_password = xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" )
     
     if not setting_server:
         dialog = xbmcgui.Dialog()
         s = dialog.input( "Enter server name:", "tvatom.com" )
         if s:
-            xbmcaddon.Addon( "plugin.video.tvatom_beta" ).setSetting( "server", s )
+            xbmcaddon.Addon( ADDON_NAME ).setSetting( "server", s )
             setting_server = s
         else:
             return False
@@ -163,7 +188,7 @@ def get_settings( redo = False ):
         dialog = xbmcgui.Dialog()
         s = dialog.input( "Enter username:" )
         if s:
-            xbmcaddon.Addon( "plugin.video.tvatom_beta" ).setSetting( "username", s )
+            xbmcaddon.Addon( ADDON_NAME ).setSetting( "username", s )
             setting_username = s
         else:
             return False
@@ -172,7 +197,7 @@ def get_settings( redo = False ):
         dialog = xbmcgui.Dialog()
         s = dialog.input( "Enter password:", type=xbmcgui.INPUT_ALPHANUM, option=xbmcgui.ALPHANUM_HIDE_INPUT )
         if s:
-            xbmcaddon.Addon( "plugin.video.tvatom_beta" ).setSetting( "password", s )
+            xbmcaddon.Addon( ADDON_NAME ).setSetting( "password", s )
             setting_password = s
         else:
             return False
@@ -245,6 +270,8 @@ def main():
         do_debug( 1, "trying to play file:", arg_file )
         
         url_file = get_file_url( arg_file )
+        if not url_file:
+            return # file not found on local or any remote URLs!!
         
         xbmc.executebuiltin( "Playlist.Clear" )
         
@@ -273,24 +300,19 @@ def main():
         if not settings:
             do_debug( 1, "not settings:", settings )
     
-    setting_username = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "username" )
-    setting_password = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "password" )
-    setting_server   = xbmcaddon.Addon( "plugin.video.tvatom_beta" ).getSetting( "server" )
+    setting_username = xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" )
+    setting_password = xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" )
+#    setting_servers  = xbmcaddon.Addon( ADDON_NAME ).getSetting( "servers" )
     
     
     ## get json..
     data = fetch_object_from_json_url_with_auth( "http://app.tvatom.com/bin/demo-tvatom.py?p=%s" % arg_path )
-    
-#    do_debug( 0, "isdirs:", data.get( "isdirs", "WTF WTF WTF WTF" ) )
-#    if data.get( "isdirs" ):
-#        do_debug( 0, "isdirs pass:" )
     
     ## set content type ..
     xbmcplugin.setContent( addon_handle, 'tvshows' )
     
     items = [] # FAILS: adding all at once fails?  (perhaps per mix of files and videos????? )
     for d in data:
-#    for d in data[ "items" ]:
         item = xbmcgui.ListItem( d.get( "label" ),
                                  iconImage = d.get( "icon" ),
                                  thumbnailImage = d.get( "thumb" ) )
@@ -305,59 +327,32 @@ def main():
 #        if d.get( "thumb" ):
 #            item.setThumbnailImage( d.get( "thumb" ) ) # shows on player-controls screen
         
-#        if d.get( "isdir" ):
-#        if data.get( "isdirs" ):
-
         if d.get( "file" ):
-            do_debug( 1, " FILE FILE FILE " )
-            url = build_appurl( { "file": d.get( "file" ),
-                                  "label": d.get( "label" ),
-                                  "thumb": d.get( "thumb" ),
-                                  "icon": d.get( "icon" ),
-                              } ) # play filename (check local, remote, then archive)
+            if d.get( "file" ).startswith( "http" ):
+                do_debug( 1, " URL URL URL " )
+                url = d.get( "file" ) # play direct url
+            else:
+                do_debug( 1, " FILE FILE FILE " )
+                url = build_appurl( { "file": d.get( "file" ),
+                                      "label": d.get( "label" ),
+                                      "thumb": d.get( "thumb" ),
+                                      "icon": d.get( "icon" ),
+                                  } ) # play filename (check local, remote, then archive)
             item.setProperty( "isplayable", "true" ) # this is required to avoid addon_handle=-1 error!
             is_folder = False
         else:
             do_debug( 1, " NOT A FILE, USE PATH:", d.get( "path" ) )
             url = build_appurl( { "path": d.get( "path" ) } )
             is_folder = True
-            
-#        elif d.get( "path" ).startswith( "http" ):
-#            do_debug( 1, "PATH IS HTTP" )
-#            url = d.get( "path" ) # play direct url (without thumbnail/etc info in player-controls = FIXME?)
-#            is_folder = False
-#            item.setProperty( "isplayable", "true" ) # holy
-#        else:
-#            do_debug( 1, "ELSE ELSE ELSE" )
-#            url = build_appurl( { "file": d.get( "path" ),
-#                                  "label": d.get( "label" ),
-#                                  "thumb": d.get( "thumb" ),
-#                                  "icon": d.get( "icon" ),
-#                              } ) # play filename (check local, remote, then archive)
-#            is_folder = True
         
-        do_debug( 0, "url:", url )
-        do_debug( 0, "addon_handle:", addon_handle )
-## tkooda : 2016-01-23 : 
-#        xbmcplugin.addDirectoryItem( handle = addon_handle,
-#                                     url = url,
-#                                     listitem = item,
-##                                     isFolder = data.get( "isdirs" ),
-##                                     isFolder = True, # MUST be true if we're going to play through the addon
-#                                     isFolder = False, # if set to True = then Kodi expects a directory listing!!!???
-#                                     totalItems = len( data[ "items" ] ) )
-
         items.append( [ url, item, is_folder ] )
     
     
     xbmcplugin.addDirectoryItems( addon_handle, items, len( data ) )
 
-    
     xbmcplugin.endOfDirectory( addon_handle )
     return
 
-#            url_episode = os.path.join( "http://%s:%s@data1.%s/show/" % ( setting_username, setting_password, setting_server ),
-#                                        arg_show, episode_season, episode_num, episode_file ) #+ "|auth=any"
 
 
 if __name__ == "__main__":
