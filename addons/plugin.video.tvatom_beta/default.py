@@ -3,6 +3,7 @@
 ## Tkooda : 2014-09-06 : xbmc video add-on
 ## tkooda : 2014-11-27 : plugin.video.tvatom_tv_archive
 ## tkooda : 2015-12-19 : beta
+## tkooda : 2016-01-23 : rewrite
 
 
 import os
@@ -117,7 +118,8 @@ def is_url_available( url ): # BEWARE: this cannot handle the "username:password
                        xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
     resp = h.request( url, "HEAD" )
     do_debug( 8, "is_url_available() result:", resp[0][ "status" ] )
-    return resp[0][ "status" ] == 200
+    print "FOO:", resp[0][ "status" ]
+    return resp[0][ "status" ] == "200"
 
 
 
@@ -140,14 +142,21 @@ def get_file_url( path ):
 #                        path ) #+ "|auth=any"
     
     for host in xbmcaddon.Addon( ADDON_NAME ).getSetting( "servers" ).split():
+        do_debug( 5, "trying remote server:", host )
         
-        url_base = os.path.join( host, path ) #+ "|auth=any"
-        if is_url_available( "http://" + url_base ):
-            do_debug( 5, "found file at remote url:", url_base )
-            url_auth = "http://%s:%s@%s" % ( xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
-                                             xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ),
-                                             url_base )
-            return url_auth
+        for subdir in [ "", "fetched", "completed" ]:
+            do_debug( 5, "trying subdir on remote server:", subdir )
+            
+            for p in [ path, os.path.basename( path ) ]:
+                do_debug( 5, "trying basename on remote server:", p )
+                
+                url_suffix = os.path.join( host, subdir, p ) #+ "|auth=any"
+                if is_url_available( "http://" + url_suffix ):
+                    do_debug( 5, "found file at remote url:", url_suffix )
+                    url_auth = "http://%s:%s@%s" % ( xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+                                                     xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ),
+                                                     url_suffix )
+                    return url_auth
     
     notification( "ERROR:", "Could not find remote file" )
     
@@ -171,16 +180,16 @@ def write_file( path_file, data ):
 
 
 def get_settings( redo = False ):
-    setting_server = xbmcaddon.Addon( ADDON_NAME ).getSetting( "server" )
+    setting_servers  = xbmcaddon.Addon( ADDON_NAME ).getSetting( "servers" )
     setting_username = xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" )
     setting_password = xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" )
     
-    if not setting_server:
+    if not setting_servers:
         dialog = xbmcgui.Dialog()
-        s = dialog.input( "Enter server name:", "tvatom.com" )
+        s = dialog.input( "Enter servers:", "data2.tvatom.com data1.tvatom.com" )
         if s:
-            xbmcaddon.Addon( ADDON_NAME ).setSetting( "server", s )
-            setting_server = s
+            xbmcaddon.Addon( ADDON_NAME ).setSetting( "servers", s )
+            setting_servers = s
         else:
             return False
     
@@ -202,8 +211,8 @@ def get_settings( redo = False ):
         else:
             return False
     
-    do_debug( 1, "settings:", setting_server, setting_username, setting_password )
-    return setting_server, setting_username, setting_password
+    do_debug( 1, "settings:", setting_servers, setting_username, setting_password )
+    return setting_servers, setting_username, setting_password
 
 
 def init_box():
@@ -261,7 +270,7 @@ def main():
     ## for populating the player-controls (and for the filename to find local/remote/archived) without having to fetch via json again..
     arg_file = args.get( 'file', [ "" ] )[ 0 ]
     arg_label = args.get( 'label', [ "" ] )[ 0 ]
-    arg_icon = args.get( 'icon', [ "" ] )[ 0 ]
+#    arg_icon = args.get( 'icon', [ "" ] )[ 0 ]
     arg_thumb = args.get( 'thumb', [ "" ] )[ 0 ]
     
     
@@ -280,7 +289,7 @@ def main():
         do_debug( 1, "url_file:", url_file )
         item = xbmcgui.ListItem( label = arg_label,
                                  path = url_file,
-                                 iconImage = arg_icon,
+#                                 iconImage = arg_icon,
                                  thumbnailImage = arg_thumb )
         item.setInfo( "video", { "title": arg_label } )  # not needed???
         
@@ -300,13 +309,12 @@ def main():
         if not settings:
             do_debug( 1, "not settings:", settings )
     
-    setting_username = xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" )
-    setting_password = xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" )
-#    setting_servers  = xbmcaddon.Addon( ADDON_NAME ).getSetting( "servers" )
-    
+#    setting_username = xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" )
+#    setting_password = xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" )
     
     ## get json..
-    data = fetch_object_from_json_url_with_auth( "http://app.tvatom.com/bin/demo-tvatom.py?p=%s" % arg_path )
+#    data = fetch_object_from_json_url_with_auth( "http://app.tvatom.com/bin/demo-tvatom.py?p=%s" % arg_path )
+    data = fetch_object_from_json_url_with_auth( "http://tvatom.appspot.com/v2/%s" % arg_path )
     
     ## set content type ..
     xbmcplugin.setContent( addon_handle, 'tvshows' )
@@ -314,7 +322,7 @@ def main():
     items = [] # FAILS: adding all at once fails?  (perhaps per mix of files and videos????? )
     for d in data:
         item = xbmcgui.ListItem( d.get( "label" ),
-                                 iconImage = d.get( "icon" ),
+#                                 iconImage = d.get( "icon" ),
                                  thumbnailImage = d.get( "thumb" ) )
         if d.get( "label2" ):
             item.setLabel2( d.get( "label2" ) )
@@ -336,7 +344,7 @@ def main():
                 url = build_appurl( { "file": d.get( "file" ),
                                       "label": d.get( "label" ),
                                       "thumb": d.get( "thumb" ),
-                                      "icon": d.get( "icon" ),
+#                                      "icon": d.get( "icon" ),
                                   } ) # play filename (check local, remote, then archive)
             item.setProperty( "isplayable", "true" ) # this is required to avoid addon_handle=-1 error!
             is_folder = False
