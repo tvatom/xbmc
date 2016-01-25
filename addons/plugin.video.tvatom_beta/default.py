@@ -392,9 +392,12 @@ def main():
                 url = d.get( "file" ) # play direct url
             else:
                 do_debug( 1, " FILE FILE FILE " )
-                url = build_appurl( { "file": d.get( "file" ),
-                                      "label": d.get( "label" ),
-                                      "thumb": d.get( "thumb" ),
+                do_debug( 0, "FILE:", d.get( "file" ) )
+                do_debug( 0, "LABEL:", d.get( "label" ) )
+                do_debug( 0, "THUMB:", d.get( "thumb" ) )
+                url = build_appurl( { "file": d.get( "file", "" ).encode( "UTF-8", "ignore" ),
+                                      "label": d.get( "label", "" ).encode( "UTF-8", "ignore" ),
+                                      "thumb": d.get( "thumb", "" ).encode( "UTF-8", "ignore" ),
 #                                      "icon": d.get( "icon" ),
                                   } ) # play filename (check local, remote, then archive)
             item.setProperty( "isplayable", "true" ) # this is required to avoid addon_handle=-1 error!
