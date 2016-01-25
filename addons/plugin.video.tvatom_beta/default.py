@@ -204,6 +204,11 @@ def get_file_url( path ):
                 url_suffix = os.path.join( host, subdir, p ) #+ "|auth=any"
                 if is_url_available( "http://" + url_suffix ):
                     do_debug( 5, "found file at remote url:", url_suffix )
+                    
+                    if host == "data2.tvatom.com":
+                        notification( "Lucky you:", "Video streaming from fast amsterdam server", 20000,
+                                      "/storage/.xbmc/addons/%s/fast.png" % ADDON_NAME )
+                    
                     url_auth = "http://%s:%s@%s" % ( xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
                                                      xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ),
                                                      url_suffix )
