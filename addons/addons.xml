@@ -30,7 +30,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.tvatom_beta" name="TVAtom BETA" version="0.0.11" provider-name="TVAtom">
+<addon id="plugin.video.tvatom_beta" name="TVAtom BETA" version="0.0.12" provider-name="TVAtom">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
