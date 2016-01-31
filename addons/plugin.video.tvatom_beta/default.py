@@ -21,7 +21,7 @@ import xbmcgui
 import xbmcaddon
 import xbmcplugin
 
-import httplib2
+#import httplib2
 
 
 PATH_CACHE = "/storage/tvatom-cache"
@@ -108,41 +108,44 @@ def fetch_url_with_auth( url ):
 
 
 def fetch_url_with_auth_v2( url ):
-#    request = urllib2.Request( url )
-#    
-#    password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
-#    password_manager.add_password( None, url,
-#                                   xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
-#                                   xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
-#    do_debug( 1, "using auth:", xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
-#              xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ), url )
-#    
-#    auth_manager = urllib2.HTTPBasicAuthHandler( password_manager )
-#    opener = urllib2.build_opener( auth_manager )
-#    
-#    urllib2.install_opener( opener )
-#    
-#    try:
-#        handler = urllib2.urlopen( request )
-#        return handler.read()
-#    except urllib2.URLError as e:
-#        do_debug( 1, "ERROR: urllib2.urlopen() response code:", e.code, url )
-#        if e.code == 401:
-#            notification( "Invalid Username or Password", "Please re-enter your login info", 5000 )
-##DEBUG FOXME FIXME FIXME GTEMP DISABLE            get_settings( True )
-#            sys.exit()
-#    except:
+    request = urllib2.Request( url )
+    
+    password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+    password_manager.add_password( None, url,
+                                   xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+                                   xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
+    do_debug( 1, "using auth:", xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+              xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ), url )
+    
+    auth_manager = urllib2.HTTPBasicAuthHandler( password_manager )
+    opener = urllib2.build_opener( auth_manager )
+    
+    urllib2.install_opener( opener )
+    
+    try:
+        handler = urllib2.urlopen( request )
+        return handler.read()
+    except urllib2.URLError as e:
+        do_debug( 1, "ERROR: urllib2.urlopen() response code:", e.code, url )
+        if e.code == 401:
+            notification( "Invalid Username or Password", "Please re-enter your login info", 5000 )
+            get_settings( True )
+            sys.exit()
+    except:
 ##        do_debug( 1, "XXXXX DEBUG" )
-#        test_internet()
-#        pass
-#    
-#    # handler.getcode()
-#    # handler.headers.getheader('content-type')
-#    return None # Error
-    h = httplib2.Http()
-    h.add_credentials( xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
-                       xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
-    response, content = h.request( url )
+        test_internet()
+        pass
+    
+    # handler.getcode()
+    # handler.headers.getheader('content-type')
+    return None # Error
+
+## tkooda : 2016-01-31 : httplib2 not available on older boxes..
+#    h = httplib2.Http()
+#    h.add_credentials( xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+#                       xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
+#    response, content = h.request( url )
+
     do_debug( 8, "fetch_url_with_auth_v2() response:", response )
     do_debug( 8, "fetch_url_with_auth_v2() content:", content )
     return content
@@ -157,20 +160,39 @@ def fetch_object_from_json_url_with_auth( url, sortkey = None ):
     return obj
 
 
-def is_url_available( url ): # BEWARE: this cannot handle the "username:password@" string in the URL like Kodi requires for it's URLs!!!
-#    request = urllib2.Request( url )
-#    request.get_method = lambda : 'HEAD'
-#    response = urllib2.urlopen( request )
-#    print response.info()
-#    url = "http://www.google.com/"
+def is_url_available( url ): # BEWARE: this cannot handle the "username:password@" string in the URL like Kodi requires for it's streaming URLs!!!
     do_debug( 5, "is_url_available():", url )
-    h = httplib2.Http()
-    h.add_credentials( xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
-                       xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
-    resp = h.request( url, "HEAD" )
-    do_debug( 8, "is_url_available() result:", resp[0][ "status" ] )
-    print "FOO:", resp[0][ "status" ]
-    return resp[0][ "status" ] == "200"
+    request = urllib2.Request( url )
+    request.get_method = lambda : 'HEAD'
+    
+    password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+    password_manager.add_password( None, url,
+                                   xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+                                   xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
+    
+    auth_manager = urllib2.HTTPBasicAuthHandler( password_manager )
+    opener = urllib2.build_opener( auth_manager )
+    
+    urllib2.install_opener( opener )
+    
+    try:
+        handler = urllib2.urlopen( request )
+    except urllib2.HTTPError, e:
+        do_debug( 5, "is_url_available() HTTP Error:", url, e.code )
+        return False
+        pass
+    
+    return handler.getcode() == 200
+    
+    
+## tkooda : 2016-01-31 : httplib2 not available on older machines..
+##    h = httplib2.Http()
+##    h.add_credentials( xbmcaddon.Addon( ADDON_NAME ).getSetting( "username" ),
+##                       xbmcaddon.Addon( ADDON_NAME ).getSetting( "password" ) )
+##    resp = h.request( url, "HEAD" )
+##    do_debug( 8, "is_url_available() result:", resp[0][ "status" ] )
+##    print "FOO:", resp[0][ "status" ]
+##    return resp[0][ "status" ] == "200"
 
 
 
