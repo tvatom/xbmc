@@ -4,6 +4,7 @@
 ## tkooda : 2014-11-27 : plugin.video.tvatom_tv_archive
 ## tkooda : 2015-12-19 : beta
 ## tkooda : 2016-01-23 : rewrite
+## 2017-04-01 : tkooda : migrate to non-beta "plugin.video.tvatom"
 
 
 import os
@@ -236,7 +237,7 @@ def get_file_url( path ):
                                                      url_suffix )
                     return url_auth
     
-    notification( "ERROR:", "Could not find remote file" )
+    notification( "Video not found:", "Likely moved to new non-beta TVAtom app" )
     
     return None
 
